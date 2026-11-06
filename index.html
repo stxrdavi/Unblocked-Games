@@ -164,16 +164,21 @@ function openSite(){
   fullscreenButton.type = 'button';
   fullscreenButton.className = 'fullscreen-button';
   fullscreenButton.textContent = '⛶ Schermo intero';
-  fullscreenButton.addEventListener('click', async () => {
-    try {
-      await frame.requestFullscreen();
-      fullscreenButton.textContent = '⛶ Schermo intero';
-      frame.focus();
-    } catch {
-      fullscreenButton.textContent = 'Schermo intero non disponibile';
-    }
-  });
-  doc.body.append(frame, fullscreenButton);
+  const fullscreenScript = doc.createElement('script');
+  fullscreenScript.textContent = `
+    const fullscreenButton = document.querySelector('.fullscreen-button');
+    const gameFrame = document.querySelector('iframe');
+    fullscreenButton.addEventListener('click', async () => {
+      try {
+        await gameFrame.requestFullscreen();
+        fullscreenButton.textContent = '⛶ Schermo intero';
+        gameFrame.focus();
+      } catch {
+        fullscreenButton.textContent = 'Schermo intero non disponibile';
+      }
+    });
+  `;
+  doc.body.append(frame, fullscreenButton, fullscreenScript);
   page.opener = null;
   window.location.replace('https://classroom.google.com/');
 }
