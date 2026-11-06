@@ -158,7 +158,7 @@ function openSite(){
   const frame = doc.createElement('iframe');
   frame.title = 'Giochi';
   frame.src = target;
-  frame.allow = 'fullscreen; autoplay; clipboard-read; clipboard-write; gamepad; encrypted-media; picture-in-picture; pointer-lock';
+  frame.allow = "fullscreen; autoplay; clipboard-read; clipboard-write; gamepad 'src' https://mathkit.org; encrypted-media; picture-in-picture; pointer-lock";
   frame.setAttribute('allowfullscreen', '');
   doc.body.append(frame);
   page.opener = null;
