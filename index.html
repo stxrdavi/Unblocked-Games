@@ -153,44 +153,14 @@ function openSite(){
   icon.href = 'data:image/jpeg;base64,/9j/4QC8RXhpZgAASUkqAAgAAAAGABIBAwABAAAAAQAAABoBBQABAAAAVgAAABsBBQABAAAAXgAAACgBAwABAAAAAgAAABMCAwABAAAAAQAAAGmHBAABAAAAZgAAAAAAAAA4YwAA6AMAADhjAADoAwAABgAAkAcABAAAADAyMTABkQcABAAAAAECAwAAoAcABAAAADAxMDABoAMAAQAAAP//AAACoAQAAQAAABAAAAADoAQAAQAAABAAAAAAAAAA/9sAQwABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/9sAQwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/8IAEQgAEAAQAwERAAIRAQMRAf/EABYAAQEBAAAAAAAAAAAAAAAAAAMFCP/EABgBAAIDAAAAAAAAAAAAAAAAAAEEAgMI/9oADAMBAAIQAxAAAAGPl2ogNAptHEf/xAAaEAACAwEBAAAAAAAAAAAAAAAGBwQFFgID/9oACAEBAAEFAuE8uphN6KBcwieqJFLobciUui//xAAfEQACAgMAAgMAAAAAAAAAAAADBAIFAQYHABMSFBX/2gAIAQMBAT8B27oNDrvRneeV/NRW7axkxjfNutjVjJFmpVtymmDNY9kQ1AME9mIGYKWIMyCORSQB5qPQqHYujo86sOajqG2ivDK+HdbC0EOClO1cBMMGK1HJhuAXH8MTMuUMWMSMOJRzX82rktZtPS9m3V/ZNXIk9+FKjAPZmkW1WK6qQTacZ+gEUgsRYQhNGS1gWGBkJM0MHwL1aryOs1bpmr7shserjSr83s70BNmadcbPYVT6azS0nwlkVibD85PyZsBQyIYyBhI+S+7/xAAhEQABAwQDAQEBAAAAAAAAAAAEAQIGAwUHEhETFCQhIv/aAAgBAgEBPwGAuy9OIvZpE3K6W912YUvjWCxkrp8ppQbvo4G7NvMtZeB2a7aIjlbs6fvy9BoteJE7K6XF9qaJ8SQaMid3sPEBaqE8FdaM9SVv0d+2nWqMV2zcWyw6GwuzR+8YzywQbbkPVzwIeU8ZPXdzz6aU6hJYZDlpUSaVLl1Jn9Nfwit0euU5YdMoVeo9ZsZZXHOuTQdKlwhxLRthrqCc9aj6BRtdFdSHqtTWi9FqLT51ar3p/8QAHRAAAgIDAQEBAAAAAAAAAAAAAgMBBAUGExQkJf/aAAgBAQAGPwJWsY3RlWbj2iC2O2rYqq4Dyxcc1n2OLnWr9WMhfVxiqYQprjBMnq+S0Vde4lpA1idq2GyqQ8vsQ5X2pIl2a8qYEM4uWLYh6luA1Rkszse34G1H5xYUcZt+OqnVs1wHtdayvlKD12VmhHhJFsgETeTV9YQS8Xmtc27A1Yib55ocnt+OtMtWHifG4ptjKX3sstN7/cT7YgUAglL7E8m//8QAFxAAAwEAAAAAAAAAAAAAAAAAAAERIf/aAAgBAQABPyGMuTZjmskIeotj/dcJAGOWs+TnxflvXkrh9pnxfLUlHCWBv//aAAwDAQACAAMAAAAQ8j//xAAWEQEBAQAAAAAAAAAAAAAAAAAAARH/2gAIAQMBAT8QAZHR/szTWPY38iSM3VXiSbphrqrUoq9Tl1gT3+M1IBE//8QAFxEBAQEBAAAAAAAAAAAAAAAAAREAMf/aAAgBAgEBPxCAFjNukzGwTNmHWiwzQSYKIIYdrPFUfQtSX8/AdXhdWPpSAh0f/8QAFxAAAwEAAAAAAAAAAAAAAAAAAAEREP/aAAgBAQABPxAg6qGfE+6QdyS6YrkhnkpEbjOKNzcT3Cjr55n03tn5vuh//9k=';
   doc.head.append(icon);
   const style = doc.createElement('style');
-  style.textContent = `
-    html, body { margin: 0; width: 100%; height: 100%; background: #000; }
-    body { display: flex; flex-direction: column; }
-    iframe { flex: 1; min-height: 0; width: 100%; border: 0; }
-    .game-controls { display: flex; justify-content: flex-end; padding: 4px 10px; background: #202124; }
-    .game-controls button { padding: 5px 10px; border: 1px solid #60636a; border-radius: 6px;
-      background: #303134; color: #fff; font: 13px system-ui, sans-serif; cursor: pointer; }
-  `;
+  style.textContent = 'html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{display:block;width:100%;height:100%;border:0}';
   doc.head.append(style);
   const frame = doc.createElement('iframe');
   frame.title = 'Giochi';
   frame.src = target;
-  frame.allow = "fullscreen 'none'; autoplay; clipboard-read; clipboard-write; gamepad 'src' https://mathkit.org; encrypted-media; picture-in-picture; pointer-lock";
-
-  const controls = doc.createElement('div');
-  controls.className = 'game-controls';
-  const fullscreenButton = doc.createElement('button');
-  fullscreenButton.type = 'button';
-  fullscreenButton.textContent = 'Schermo intero';
-  controls.append(fullscreenButton);
-  doc.body.append(controls, frame);
-
-  // Register the handler in the games tab so it survives the calculator redirect.
-  const fullscreenScript = doc.createElement('script');
-  fullscreenScript.textContent = `
-    const button = document.querySelector('.game-controls button');
-    const games = document.querySelector('iframe');
-    button.addEventListener('click', async () => {
-      try {
-        await games.requestFullscreen();
-        button.textContent = 'Schermo intero';
-        games.focus();
-      } catch {
-        button.textContent = 'Schermo intero non disponibile';
-      }
-    });
-  `;
-  doc.body.append(fullscreenScript);
+  frame.allow = "fullscreen 'src' https://mathkit.org; autoplay; clipboard-read; clipboard-write; gamepad 'src' https://mathkit.org; encrypted-media; picture-in-picture; pointer-lock";
+  frame.setAttribute('allowfullscreen', '');
+  doc.body.append(frame);
   page.opener = null;
   window.location.replace('https://classroom.google.com/');
 }
