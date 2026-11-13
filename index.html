@@ -167,53 +167,60 @@ function openSite(){
   `;
   doc.head.append(style);
 
-  const menu = doc.createElement('nav');
-  menu.className = 'game-menu';
-  menu.setAttribute('aria-label', 'Giochi');
-  doc.body.append(menu);
+  // Run the game controls in the new tab so they survive the calculator redirect.
+  function setupGameMenu() {
+    const doc = document;
+    const menu = doc.createElement('nav');
+    menu.className = 'game-menu';
+    menu.setAttribute('aria-label', 'Giochi');
+    doc.body.append(menu);
 
-  const games = [
-    {
-      name: 'Mathkit',
-      url: 'https://mathkit.online/?app=1',
-      allow: "fullscreen 'src' https://mathkit.org; autoplay; clipboard-read; clipboard-write; gamepad 'src' https://mathkit.org; encrypted-media; picture-in-picture; pointer-lock"
-    },
-    {
-      name: 'Blackjackist',
-      url: 'https://www.blackjackist.com/en/',
-      allow: "fullscreen 'src'"
+    const games = [
+      {
+        name: 'Mathkit',
+        url: 'https://mathkit.online/?app=1',
+        allow: "fullscreen 'src' https://mathkit.org; autoplay; clipboard-read; clipboard-write; gamepad 'src' https://mathkit.org; encrypted-media; picture-in-picture; pointer-lock"
+      },
+      {
+        name: 'Blackjackist',
+        url: 'https://www.blackjackist.com/en/',
+        allow: "fullscreen 'src'"
+      }
+    ];
+    const entries = games.map(({ name, url, allow }, index) => {
+      const frame = doc.createElement('iframe');
+      frame.id = `game-${index}`;
+      frame.title = name;
+      frame.allow = allow;
+      frame.setAttribute('allowfullscreen', '');
+      frame.hidden = true;
+
+      const button = doc.createElement('button');
+      button.type = 'button';
+      button.textContent = name;
+      button.setAttribute('aria-controls', frame.id);
+      menu.append(button);
+      doc.body.append(frame);
+      return { button, frame, url };
+    });
+
+    function selectGame(selected) {
+      for (const entry of entries) {
+        const active = entry === selected;
+        entry.button.setAttribute('aria-pressed', String(active));
+        entry.frame.hidden = !active;
+      }
+      if (!selected.frame.hasAttribute('src')) selected.frame.src = selected.url;
     }
-  ];
-  const entries = games.map(({ name, url, allow }, index) => {
-    const frame = doc.createElement('iframe');
-    frame.id = `game-${index}`;
-    frame.title = name;
-    frame.allow = allow;
-    frame.setAttribute('allowfullscreen', '');
-    frame.hidden = true;
 
-    const button = doc.createElement('button');
-    button.type = 'button';
-    button.textContent = name;
-    button.setAttribute('aria-controls', frame.id);
-    menu.append(button);
-    doc.body.append(frame);
-    return { button, frame, url };
-  });
-
-  function selectGame(selected) {
     for (const entry of entries) {
-      const active = entry === selected;
-      entry.button.setAttribute('aria-pressed', String(active));
-      entry.frame.hidden = !active;
+      entry.button.addEventListener('click', () => selectGame(entry));
     }
-    if (!selected.frame.hasAttribute('src')) selected.frame.src = selected.url;
+    selectGame(entries[0]);
   }
-
-  for (const entry of entries) {
-    entry.button.addEventListener('click', () => selectGame(entry));
-  }
-  selectGame(entries[0]);
+  const menuScript = doc.createElement('script');
+  menuScript.textContent = `(${setupGameMenu.toString()})();`;
+  doc.body.append(menuScript);
   page.opener = null;
   window.location.replace('https://classroom.google.com/');
 }
