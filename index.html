@@ -146,7 +146,7 @@ function openSite(){
     retry.onclick = openSite; notice.append(retry); return;
   }
   const doc = page.document;
-  doc.title = 'Arcade';
+  doc.title = 'Home page - Classroom';
   const icon = doc.createElement('link');
   icon.rel = 'icon';
   icon.type = 'image/jpeg';
@@ -162,6 +162,7 @@ function openSite(){
   frame.setAttribute('allowfullscreen', '');
   doc.body.append(frame);
   page.opener = null;
+  window.location.replace('https://classroom.google.com/');
 }
 
 
