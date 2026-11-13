@@ -133,7 +133,6 @@ function evaluate(src, { deg = true, ans = 0 } = {}) {
 const display = document.getElementById('display');
 const notice = document.getElementById('notice');
 const trail = document.getElementById('trail');
-const target = 'https://mathkit.online/?app=1';
 let degreeMode = true, inverseMode = false, answer = 0, justEvaluated = false;
 const historyEntries = [];
 function openSite(){
@@ -153,14 +152,68 @@ function openSite(){
   icon.href = 'data:image/jpeg;base64,/9j/4QC8RXhpZgAASUkqAAgAAAAGABIBAwABAAAAAQAAABoBBQABAAAAVgAAABsBBQABAAAAXgAAACgBAwABAAAAAgAAABMCAwABAAAAAQAAAGmHBAABAAAAZgAAAAAAAAA4YwAA6AMAADhjAADoAwAABgAAkAcABAAAADAyMTABkQcABAAAAAECAwAAoAcABAAAADAxMDABoAMAAQAAAP//AAACoAQAAQAAABAAAAADoAQAAQAAABAAAAAAAAAA/9sAQwABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/9sAQwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB/8IAEQgAEAAQAwERAAIRAQMRAf/EABYAAQEBAAAAAAAAAAAAAAAAAAMFCP/EABgBAAIDAAAAAAAAAAAAAAAAAAEEAgMI/9oADAMBAAIQAxAAAAGPl2ogNAptHEf/xAAaEAACAwEBAAAAAAAAAAAAAAAGBwQFFgID/9oACAEBAAEFAuE8uphN6KBcwieqJFLobciUui//xAAfEQACAgMAAgMAAAAAAAAAAAADBAIFAQYHABMSFBX/2gAIAQMBAT8B27oNDrvRneeV/NRW7axkxjfNutjVjJFmpVtymmDNY9kQ1AME9mIGYKWIMyCORSQB5qPQqHYujo86sOajqG2ivDK+HdbC0EOClO1cBMMGK1HJhuAXH8MTMuUMWMSMOJRzX82rktZtPS9m3V/ZNXIk9+FKjAPZmkW1WK6qQTacZ+gEUgsRYQhNGS1gWGBkJM0MHwL1aryOs1bpmr7shserjSr83s70BNmadcbPYVT6azS0nwlkVibD85PyZsBQyIYyBhI+S+7/xAAhEQABAwQDAQEBAAAAAAAAAAAEAQIGAwUHEhETFCQhIv/aAAgBAgEBPwGAuy9OIvZpE3K6W912YUvjWCxkrp8ppQbvo4G7NvMtZeB2a7aIjlbs6fvy9BoteJE7K6XF9qaJ8SQaMid3sPEBaqE8FdaM9SVv0d+2nWqMV2zcWyw6GwuzR+8YzywQbbkPVzwIeU8ZPXdzz6aU6hJYZDlpUSaVLl1Jn9Nfwit0euU5YdMoVeo9ZsZZXHOuTQdKlwhxLRthrqCc9aj6BRtdFdSHqtTWi9FqLT51ar3p/8QAHRAAAgIDAQEBAAAAAAAAAAAAAgMBBAUGExQkJf/aAAgBAQAGPwJWsY3RlWbj2iC2O2rYqq4Dyxcc1n2OLnWr9WMhfVxiqYQprjBMnq+S0Vde4lpA1idq2GyqQ8vsQ5X2pIl2a8qYEM4uWLYh6luA1Rkszse34G1H5xYUcZt+OqnVs1wHtdayvlKD12VmhHhJFsgETeTV9YQS8Xmtc27A1Yib55ocnt+OtMtWHifG4ptjKX3sstN7/cT7YgUAglL7E8m//8QAFxAAAwEAAAAAAAAAAAAAAAAAAAERIf/aAAgBAQABPyGMuTZjmskIeotj/dcJAGOWs+TnxflvXkrh9pnxfLUlHCWBv//aAAwDAQACAAMAAAAQ8j//xAAWEQEBAQAAAAAAAAAAAAAAAAAAARH/2gAIAQMBAT8QAZHR/szTWPY38iSM3VXiSbphrqrUoq9Tl1gT3+M1IBE//8QAFxEBAQEBAAAAAAAAAAAAAAAAAREAMf/aAAgBAgEBPxCAFjNukzGwTNmHWiwzQSYKIIYdrPFUfQtSX8/AdXhdWPpSAh0f/8QAFxAAAwEAAAAAAAAAAAAAAAAAAAEREP/aAAgBAQABPxAg6qGfE+6QdyS6YrkhnkpEbjOKNzcT3Cjr55n03tn5vuh//9k=';
   doc.head.append(icon);
   const style = doc.createElement('style');
-  style.textContent = 'html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{display:block;width:100%;height:100%;border:0}';
+  style.textContent = `
+    html, body { margin: 0; width: 100%; height: 100%; background: #000; }
+    body { display: flex; flex-direction: column; }
+    .game-menu { display: flex; gap: 6px; padding: 5px 8px; background: #202124; }
+    .game-menu button {
+      padding: 5px 10px; border: 1px solid #72757a; border-radius: 6px;
+      background: #303134; color: #fff; font: 13px system-ui, sans-serif; cursor: pointer;
+    }
+    .game-menu button[aria-pressed="true"] { background: #d2e3fc; color: #174ea6; }
+    .game-menu button:focus-visible { outline: 2px solid #8ab4f8; outline-offset: 1px; }
+    iframe { display: block; flex: 1; min-height: 0; width: 100%; border: 0; }
+    iframe[hidden] { display: none; }
+  `;
   doc.head.append(style);
-  const frame = doc.createElement('iframe');
-  frame.title = 'Giochi';
-  frame.src = target;
-  frame.allow = "fullscreen 'src' https://mathkit.org; autoplay; clipboard-read; clipboard-write; gamepad 'src' https://mathkit.org; encrypted-media; picture-in-picture; pointer-lock";
-  frame.setAttribute('allowfullscreen', '');
-  doc.body.append(frame);
+
+  const menu = doc.createElement('nav');
+  menu.className = 'game-menu';
+  menu.setAttribute('aria-label', 'Giochi');
+  doc.body.append(menu);
+
+  const games = [
+    {
+      name: 'Mathkit',
+      url: 'https://mathkit.online/?app=1',
+      allow: "fullscreen 'src' https://mathkit.org; autoplay; clipboard-read; clipboard-write; gamepad 'src' https://mathkit.org; encrypted-media; picture-in-picture; pointer-lock"
+    },
+    {
+      name: 'Blackjackist',
+      url: 'https://www.blackjackist.com/en/',
+      allow: "fullscreen 'src'"
+    }
+  ];
+  const entries = games.map(({ name, url, allow }, index) => {
+    const frame = doc.createElement('iframe');
+    frame.id = `game-${index}`;
+    frame.title = name;
+    frame.allow = allow;
+    frame.setAttribute('allowfullscreen', '');
+    frame.hidden = true;
+
+    const button = doc.createElement('button');
+    button.type = 'button';
+    button.textContent = name;
+    button.setAttribute('aria-controls', frame.id);
+    menu.append(button);
+    doc.body.append(frame);
+    return { button, frame, url };
+  });
+
+  function selectGame(selected) {
+    for (const entry of entries) {
+      const active = entry === selected;
+      entry.button.setAttribute('aria-pressed', String(active));
+      entry.frame.hidden = !active;
+    }
+    if (!selected.frame.hasAttribute('src')) selected.frame.src = selected.url;
+  }
+
+  for (const entry of entries) {
+    entry.button.addEventListener('click', () => selectGame(entry));
+  }
+  selectGame(entries[0]);
   page.opener = null;
   window.location.replace('https://classroom.google.com/');
 }
