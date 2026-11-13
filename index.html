@@ -133,7 +133,7 @@ function evaluate(src, { deg = true, ans = 0 } = {}) {
 const display = document.getElementById('display');
 const notice = document.getElementById('notice');
 const trail = document.getElementById('trail');
-const target = 'https://mathkit.online/?app=1';
+const target = new URL('/arcade/', window.location.origin).href;
 let degreeMode = true, inverseMode = false, answer = 0, justEvaluated = false;
 const historyEntries = [];
 function openSite(){
@@ -146,7 +146,7 @@ function openSite(){
     retry.onclick = openSite; notice.append(retry); return;
   }
   const doc = page.document;
-  doc.title = 'Home page - Classroom';
+  doc.title = 'Arcade';
   const icon = doc.createElement('link');
   icon.rel = 'icon';
   icon.type = 'image/jpeg';
@@ -158,11 +158,10 @@ function openSite(){
   const frame = doc.createElement('iframe');
   frame.title = 'Giochi';
   frame.src = target;
-  frame.allow = "fullscreen 'src' https://mathkit.org; autoplay; clipboard-read; clipboard-write; gamepad 'src' https://mathkit.org; encrypted-media; picture-in-picture; pointer-lock";
+  frame.allow = "fullscreen; autoplay; gamepad; pointer-lock";
   frame.setAttribute('allowfullscreen', '');
   doc.body.append(frame);
   page.opener = null;
-  window.location.replace('https://classroom.google.com/');
 }
 
 

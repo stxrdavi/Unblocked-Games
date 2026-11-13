@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Cuphead</title>
+    <style>
+      body {
+        background-color: black;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      #gameContainer {
+        width: 100vw !important;
+        height: 100vh !important;
+      }
+      canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+#loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 10;
+  background: black;
+  font-family: system-ui, sans-serif;
+  color: #ccc;
+}
+#loading-text {
+  font-weight: bold;
+  font-size: 40px;
+  font-family: cursive;
+  text-align: center;
+  background: linear-gradient(
+    270deg,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #4b0082,
+    #8f00ff
+  );
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow 3s ease infinite;
+}
+#loading-bar {
+  width: min(420px, 80vw);
+  height: 10px;
+  border-radius: 5px;
+  background: #222;
+  overflow: hidden;
+}
+#loading-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #ff7f00, #ffff00);
+  transition: width 0.2s;
+}
+#loading-note {
+  font-size: 14px;
+  text-align: center;
+  max-width: 80vw;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+    </style>
+  </head>
+  <body>
+    <div id="loading">
+      <div id="loading-text">LOADING...</div>
+      <div id="loading-bar"><div id="loading-fill"></div></div>
+      <div id="loading-note"></div>
+    </div>
+    <div id="gameContainer"></div>
+    <script src="Build/UnityLoader.js"></script>
+    <script>
+    // Each 20 MB part is saved in this browser as soon as it arrives, so the
+    // game downloads once: after that it starts from the saved copy (no
+    // download), and a download that gets cut off carries on where it stopped.
+    (async function () {
+      var CACHE = "cuphead-v2";
+      var DATA = "Build/CupheadPort.data.unityweb";
+      var DATA_PARTS = 103;
+      var DATA_BYTES = 2134335501;
+      var WASM_GZ = "Build/CupheadPort.wasm.code.unityweb.gz";
+      var WASM_GZ_BYTES = 7309733;
+      var WASM_BYTES = 26100243;
+      var AT_ONCE = 6;
+
+      var box = document.getElementById("loading");
+      var text = document.getElementById("loading-text");
+      var fill = document.getElementById("loading-fill");
+      var note = document.getElementById("loading-note");
+      var MB = 1024 * 1024;
+
+      try { caches.delete("cuphead-cache"); } catch (e) {}
+      try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(function () {}); } catch (e) {}
+
+      var cache = null;
+      try { cache = await caches.open(CACHE); } catch (e) {}
+
+      var gz = typeof DecompressionStream === "function";
+      var wasmParts = gz ? [WASM_GZ] : [1, 2].map(function (i) { return "Build/CupheadPort.wasm.code.unityweb.part" + i; });
+      var dataParts = [];
+      for (var i = 1; i <= DATA_PARTS; i++) dataParts.push(DATA + ".part" + i);
+
+      var cached = 0;
+      if (cache) {
+        var keys = await cache.keys().catch(function () { return []; });
+        var have = new Set(keys.map(function (r) { return new URL(r.url).pathname.split("/").pop(); }));
+        dataParts.concat(wasmParts).forEach(function (p) { if (have.has(p.split("/").pop())) cached++; });
+      }
+      var firstTime = cached < dataParts.length + wasmParts.length;
+      var total = DATA_BYTES + (gz ? WASM_GZ_BYTES : WASM_BYTES);
+      var done = 0;
+      var drawing = false;
+      function show() {
+        if (drawing) return;
+        drawing = true;
+        requestAnimationFrame(function () {
+          drawing = false;
+          var pct = Math.min(100, (done / total) * 100);
+          fill.style.width = pct + "%";
+          text.textContent = firstTime
+            ? "DOWNLOADING... " + Math.floor(done / MB) + " / " + Math.floor(total / MB) + " MB"
+            : "LOADING... " + Math.floor(pct) + "%";
+        });
+      }
+      note.textContent = firstTime
+        ? (cached ? "Carrying on where the last download stopped. " : "") + "First time only: after this, Cuphead starts from this browser with no download."
+        : "Starting from this browser - no download needed.";
+      show();
+
+      async function fetchRetry(url) {
+        for (var t = 0; ; t++) {
+          try {
+            var r = await fetch(url);
+            if (r.ok) return r;
+            throw new Error(url + ": " + r.status);
+          } catch (e) {
+            if (t >= 4) throw e;
+            await new Promise(function (ok) { setTimeout(ok, 1000 * (t + 1)); });
+          }
+        }
+      }
+
+      async function part(url, packed) {
+        if (cache) {
+          var hit = await cache.match(url).catch(function () { return null; });
+          if (hit) {
+            var saved = await hit.blob();
+            done += packed ? WASM_GZ_BYTES : saved.size;
+            show();
+            return saved;
+          }
+        }
+        var res = await fetchRetry(url);
+        var got = 0;
+        var body = res.body.pipeThrough(new TransformStream({
+          transform: function (chunk, c) { got += chunk.length; done += chunk.length; show(); c.enqueue(chunk); }
+        }));
+        if (packed) body = body.pipeThrough(new DecompressionStream("gzip"));
+        var blob;
+        try {
+          blob = await new Response(body).blob();
+        } catch (e) {
+          done -= got;
+          throw e;
+        }
+        if (cache) {
+          try {
+            await cache.put(url, new Response(blob));
+            var back = await cache.match(url);
+            if (back) return await back.blob();
+          } catch (e) {
+            cache = null; // no room (e.g. a private window): keep it in memory this time
+          }
+        }
+        return blob;
+      }
+
+      async function getAll(urls, packed) {
+        var out = new Array(urls.length);
+        var next = 0;
+        async function worker() {
+          while (next < urls.length) {
+            var i = next++;
+            out[i] = await part(urls[i], packed);
+          }
+        }
+        var workers = [];
+        for (var w = 0; w < Math.min(AT_ONCE, urls.length); w++) workers.push(worker());
+        await Promise.all(workers);
+        return new Blob(out);
+      }
+
+      var blobs;
+      try {
+        blobs = await Promise.all([getAll(wasmParts, gz), getAll(dataParts, false)]);
+      } catch (e) {
+        text.textContent = "DOWNLOAD STOPPED";
+        note.textContent = "Check your internet connection, then reload to carry on (what's already downloaded is kept).";
+        return;
+      }
+      var wasmUrl = URL.createObjectURL(blobs[0]);
+      var dataUrl = URL.createObjectURL(blobs[1]);
+
+      // Old browsers without WebAssembly: the asm.js version (only then).
+      var asmUrl = null;
+      if (typeof WebAssembly !== "object") {
+        var asmParts = [1, 2, 3].map(function (i) { return "Build/CupheadPort.asm.code.unityweb.part" + i; });
+        asmUrl = URL.createObjectURL(await getAll(asmParts, false));
+      }
+      firstTime = false;
+      done = total;
+      show();
+      note.textContent = "Starting...";
+
+      var originalOpen = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function (method, url) {
+        var rest = Array.prototype.slice.call(arguments, 2);
+        if (typeof url === "string") {
+          if (url.indexOf("CupheadPort.data.unityweb") !== -1) url = dataUrl;
+          else if (url.indexOf("CupheadPort.wasm.code.unityweb") !== -1) url = wasmUrl;
+          else if (asmUrl && url.indexOf("CupheadPort.asm.code.unityweb") !== -1) url = asmUrl;
+        }
+        return originalOpen.apply(this, [method, url].concat(rest));
+      };
+      function hideLoading() { if (box.parentNode) box.remove(); }
+      setTimeout(hideLoading, 60000);
+      UnityLoader.instantiate("gameContainer", "Build/CupheadPort.json", {
+        onProgress: function (instance, progress) { if (progress >= 1) hideLoading(); }
+      });
+    })();
+    </script>
+  </body>
+</html>

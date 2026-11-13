@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
+<title>Home page - Classroom</title>
+<link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
+<link rel="stylesheet" href="assets/arcade.css">
+</head>
+<body>
+<header class="top"><div class="shell">
+  <a class="brand" href="#" aria-label="Arcade, home">Arcade<span aria-hidden="true">.</span></a>
+  <label class="top-search"><span class="icon-search" aria-hidden="true"></span><input id="search" type="search" aria-label="Cerca un gioco" placeholder="Cerca un gioco…" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
+  <div class="header-actions">
+    <button class="saved" type="button" id="favorites" aria-pressed="false">☆ Preferiti</button>
+  </div>
+</div></header>
+<main class="shell">
+  <div id="home">
+    <section class="hero" id="hero">
+      <div class="hero-text"><h1>Scegli.<br><em>Gioca.</em></h1><p id="hero-summary"></p><a href="#catalogo" class="primary">Esplora il catalogo <span aria-hidden="true">↓</span></a></div>
+      <div class="hero-art">
+        <img class="hero-image" src="assets/covers/plants-vs-zombies.webp" alt="">
+        <a class="hero-game" href="#gioco/plants-vs-zombies"><span>Plants vs. Zombies</span><span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+    <section id="catalogo" aria-labelledby="catalog-title">
+      <div class="catalog-head"><h2 id="catalog-title" tabindex="-1">Tutti i giochi</h2><p id="count" class="count" aria-live="polite"></p></div>
+      <div class="filters" id="filters" aria-label="Filtri del catalogo"></div>
+      <div class="grid" id="games"></div>
+      <p class="empty" id="empty" hidden></p>
+    </section>
+  </div>
+  <section id="player" class="player" aria-labelledby="game-title" hidden>
+    <div class="player-head">
+      <button id="back" class="secondary" type="button">← Catalogo</button>
+      <img id="player-cover" class="player-cover" alt="" hidden>
+      <h1 id="game-title" tabindex="-1"></h1>
+      <button id="fullscreen" class="secondary" type="button">Schermo intero</button>
+    </div>
+    <div id="frame-slot"></div>
+    <p class="player-note" id="player-note" aria-live="polite" hidden></p>
+  </section>
+</main>
+<script id="game-data" type="application/json">[{"id":"3d-flight-simulator","title":"3D Flight Simulator","category":"Simulazione","edition":"Simulazione","color":"#345a50","url":"games/3d-flight-simulator/index.html","cover":"assets/covers/3d-flight-simulator.webp"},{"id":"8-ball-pool-classic","title":"8 Ball Pool Classic","category":"Sport","edition":"Sport","color":"#525472","url":"games/8-ball-pool-classic/index.html","cover":"assets/covers/8-ball-pool-classic.webp"},{"id":"10-bullets","title":"10 Bullets","category":"Azione","edition":"Azione","color":"#6f5046","url":"games/10-bullets/index.html","cover":"assets/covers/10-bullets.webp"},{"id":"10-minutes-till-dawn","title":"10 Minutes till dawn","category":"Azione","edition":"Azione","color":"#415e78","url":"games/10-minutes-till-dawn/index.html","cover":"assets/covers/10-minutes-till-dawn.webp"},{"id":"12-minibattles","title":"12 Minibattles","category":"Arcade","edition":"Arcade","color":"#614a71","url":"games/12-minibattles/index.html","cover":"assets/covers/12-minibattles.webp"},{"id":"2048","title":"2048","category":"Puzzle","edition":"Puzzle","color":"#345a50","url":"games/2048/index.html","cover":"assets/covers/2048.webp"},{"id":"age-of-war","title":"Age of war","category":"Strategia","edition":"Strategia","color":"#525472","url":"games/age-of-war/index.html","cover":"assets/covers/age-of-war.webp"},{"id":"appel","title":"Appel","category":"Platform","edition":"Platform","color":"#6f5046","url":"games/appel/index.html","cover":"assets/covers/appel.webp"},{"id":"basket-bros","title":"Basket bros","category":"Sport","edition":"Sport","color":"#415e78","url":"games/basket-bros/index.html","cover":"assets/covers/basket-bros.webp"},{"id":"basket-random","title":"Basket random","category":"Sport","edition":"Sport","color":"#614a71","url":"games/basket-random/index.html","cover":"assets/covers/basket-random.webp"},{"id":"basketball-legends","title":"Basketball legends","category":"Sport","edition":"Sport","color":"#345a50","url":"games/basketball-legends/index.html","cover":"assets/covers/basketball-legends.webp"},{"id":"basketball-stars","title":"Basketball stars","category":"Sport","edition":"Sport","color":"#525472","url":"games/basketball-stars/index.html","cover":"assets/covers/basketball-stars.webp"},{"id":"big-flappy-tower-vs-tiny-square","title":"Big Flappy Tower vs Tiny Square","category":"Platform","edition":"Platform","color":"#6f5046","url":"games/big-flappy-tower-vs-tiny-square/index.html","cover":"assets/covers/big-flappy-tower-vs-tiny-square.webp"},{"id":"big-tower-tiny-square-2","title":"Big Tower Tiny Square 2","category":"Platform","edition":"Platform","color":"#525472","url":"games/big-tower-tiny-square-2/index.html","cover":"assets/covers/big-tower-tiny-square-2.webp"},{"id":"block-blast","title":"Block Blast","category":"Puzzle","edition":"Puzzle","color":"#6f5046","url":"games/block-blast/index.html","cover":"assets/covers/block-blast.webp"},{"id":"bloons-td","title":"Bloons TD","category":"Strategia","edition":"Strategia","color":"#415e78","url":"games/bloons-td/index.html","cover":"assets/covers/bloons-td.webp"},{"id":"bloons-td-2","title":"Bloons TD 2","category":"Strategia","edition":"Strategia","color":"#614a71","url":"games/bloons-td-2/index.html","cover":"assets/covers/bloons-td-2.webp"},{"id":"bloons-td-3","title":"Bloons TD 3","category":"Strategia","edition":"Strategia","color":"#345a50","url":"games/bloons-td-3/index.html","cover":"assets/covers/bloons-td-3.webp"},{"id":"bloons-td-4","title":"Bloons TD 4","category":"Strategia","edition":"Strategia","color":"#525472","url":"games/bloons-td-4/index.html","cover":"assets/covers/bloons-td-4.webp"},{"id":"bloons-td-5","title":"Bloons TD 5","category":"Strategia","edition":"Strategia","color":"#525472","url":"games/bloons-td-5/index.html","cover":"assets/covers/bloons-td-5.webp"},{"id":"bloxorz","title":"Bloxorz","category":"Puzzle","edition":"Puzzle","color":"#6f5046","url":"games/bloxorz/index.html","cover":"assets/covers/bloxorz.webp"},{"id":"bouncy-motors","title":"Bouncy Motors","category":"Corse","edition":"Corse","color":"#415e78","url":"games/bouncy-motors/index.html","cover":"assets/covers/bouncy-motors.webp"},{"id":"bowmasters","title":"Bowmasters","category":"Azione","edition":"Azione","color":"#614a71","url":"games/bowmasters/index.html","cover":"assets/covers/bowmasters.webp"},{"id":"boxing-random","title":"Boxing Random","category":"Sport","edition":"Sport","color":"#345a50","url":"games/boxing-random/index.html","cover":"assets/covers/boxing-random.webp"},{"id":"bubble-shooter","title":"Bubble shooter","category":"Puzzle","edition":"Puzzle","color":"#525472","url":"games/bubble-shooter/index.html","cover":"assets/covers/bubble-shooter.webp"},{"id":"capybara-clicker","title":"Capybara clicker","category":"Clicker","edition":"Clicker","color":"#6f5046","url":"games/capybara-clicker/index.html","cover":"assets/covers/capybara-clicker.webp"},{"id":"car-drawing","title":"Car drawing","category":"Puzzle","edition":"Puzzle","color":"#415e78","url":"games/car-drawing/index.html","cover":"assets/covers/car-drawing.webp"},{"id":"chess","title":"Chess","category":"Strategia","edition":"Strategia","color":"#614a71","url":"games/chess/index.html","cover":"assets/covers/chess.webp"},{"id":"circloo","title":"circloO","category":"Puzzle","edition":"Puzzle","color":"#345a50","url":"games/circloo/index.html","cover":"assets/covers/circloo.webp"},{"id":"cleanup-io","title":"Cleanup.io","category":"Arcade","edition":"Arcade","color":"#525472","url":"games/cleanup-io/index.html","cover":"assets/covers/cleanup-io.webp"},{"id":"cookie-clicker","title":"Cookie clicker","category":"Clicker","edition":"Clicker","color":"#614a71","url":"games/cookie-clicker/index.html","cover":"assets/covers/cookie-clicker.webp"},{"id":"crazy-motorcycle","title":"Crazy motorcycle","category":"Corse","edition":"Corse","color":"#415e78","url":"games/crazy-motorcycle/index.html","cover":"assets/covers/crazy-motorcycle.webp"},{"id":"cuphead","title":"Cuphead","category":"Azione","edition":"Azione","color":"#345a50","url":"games/cuphead/index.html","cover":"assets/covers/cuphead.webp","notice":"Cuphead richiede la cartella Build originale, che manca nei file ricevuti."},{"id":"eaglecraft-1-8-8","title":"Eaglercraft 1.8.8","category":"Sandbox","edition":"Sandbox","color":"#415e78","url":"games/eaglecraft-1-8-8/index.html","cover":"assets/covers/eaglecraft-1-8-8.webp","version":"1.8.8"},{"id":"eaglecraft-1-12","title":"Eaglercraft 1.12.2","category":"Sandbox","edition":"Sandbox","color":"#614a71","url":"games/eaglecraft-1-12/index.html","cover":"assets/covers/eaglecraft-1-12.webp","version":"1.12.2"},{"id":"escape-road","title":"Escape Road","category":"Corse","edition":"Corse","color":"#525472","url":"games/escape-road/index.html","cover":"assets/covers/escape-road.webp"},{"id":"escape-road-2","title":"Escape Road 2","category":"Corse","edition":"Corse","color":"#6f5046","url":"games/escape-road-2/index.html","cover":"assets/covers/escape-road-2.webp"},{"id":"moto-x3m","title":"Moto X3M","category":"Corse","edition":"Corse","color":"#525472","url":"games/moto-x3m/index.html","cover":"assets/covers/moto-x3m.webp"},{"id":"moto-x3m-2","title":"Moto X3M 2","category":"Corse","edition":"Corse","color":"#525472","url":"games/moto-x3m-2/index.html","cover":"assets/covers/moto-x3m-2.webp"},{"id":"moto-x3m-winter","title":"Moto X3M Winter","category":"Corse","edition":"Corse","color":"#525472","url":"games/moto-x3m-winter/index.html","cover":"assets/covers/moto-x3m-winter.webp"},{"id":"moto-x3m-5","title":"Moto X3M Pool Party","category":"Corse","edition":"Corse","color":"#415e78","url":"games/moto-x3m-5/index.html","cover":"assets/covers/moto-x3m-5.webp"},{"id":"moto-x3m-6","title":"Moto X3M Spooky Land","category":"Corse","edition":"Corse","color":"#614a71","url":"games/moto-x3m-6/index.html","cover":"assets/covers/moto-x3m-6.webp"},{"id":"only-up","title":"Only Up!","category":"Platform","edition":"Platform","color":"#345a50","url":"games/only-up/index.html","cover":"assets/covers/only-up.webp"},{"id":"plants-vs-zombies","title":"Plants vs. Zombies","category":"Strategia","edition":"Strategia","color":"#525472","url":"games/plants-vs-zombies/index.html","cover":"assets/covers/plants-vs-zombies.webp"},{"id":"pou","title":"Pou","category":"Simulazione","edition":"Simulazione","color":"#525472","url":"games/pou/index.html","cover":"assets/covers/pou.webp"},{"id":"sprunki","title":"Sprunki","category":"Musica","edition":"Musica","color":"#6f5046","url":"games/sprunki/index.html","cover":"assets/covers/sprunki.webp"},{"id":"state-io","title":"State.io","category":"Strategia","edition":"Strategia","color":"#415e78","url":"games/state-io/index.html","cover":"assets/covers/state-io.webp"},{"id":"steal-a-brainrot","title":"Steal a brainrot","category":"Arcade","edition":"Arcade","color":"#614a71","url":"games/steal-a-brainrot/index.html","cover":"assets/covers/steal-a-brainrot.webp"},{"id":"stickman-hook","title":"Stickman hook","category":"Platform","edition":"Platform","color":"#345a50","url":"games/stickman-hook/index.html","cover":"assets/covers/stickman-hook.webp"},{"id":"stickman-climb-1","title":"Stickman Climb","category":"Platform","edition":"Platform","color":"#6f5046","url":"games/stickman-climb-1/index.html","cover":"assets/covers/stickman-climb-1.webp"},{"id":"worlds-hardest-game","title":"World’s Hardest Game","category":"Arcade","edition":"Arcade","color":"#614a71","url":"games/worlds-hardest-game/index.html","cover":"assets/covers/worlds-hardest-game.webp"},{"id":"worlds-hardest-game-2","title":"World’s Hardest Game 2","category":"Arcade","edition":"Arcade","color":"#345a50","url":"games/worlds-hardest-game-2/index.html","cover":"assets/covers/worlds-hardest-game-2.webp"},{"id":"worlds-hardest-game-3","title":"World’s Hardest Game 3","category":"Arcade","edition":"Arcade","color":"#525472","url":"games/worlds-hardest-game-3/index.html","cover":"assets/covers/worlds-hardest-game-3.webp"},{"id":"geometry-dash-lite","title":"Geometry Dash Lite","category":"Platform","edition":"Platform","color":"#525472","url":"games/geometry-dash-lite/index.html","cover":"assets/covers/geometry-dash-lite.webp"},{"id":"five-nights-at-freddys","title":"Five Nights at Freddy’s","category":"Horror","edition":"Horror","color":"#525472","url":"games/five-nights-at-freddys/index.html","cover":"assets/covers/five-nights-at-freddys.webp"},{"id":"five-nights-at-freddys-2","title":"Five Nights at Freddy’s 2","category":"Horror","edition":"Horror","color":"#525472","url":"games/five-nights-at-freddys-2/index.html","cover":"assets/covers/five-nights-at-freddys-2.webp"},{"id":"five-nights-at-freddys-3","title":"Five Nights at Freddy’s 3","category":"Horror","edition":"Horror","color":"#525472","url":"games/five-nights-at-freddys-3/index.html","cover":"assets/covers/five-nights-at-freddys-3.webp"},{"id":"five-nights-at-freddys-4","title":"Five Nights at Freddy’s 4","category":"Horror","edition":"Horror","color":"#525472","url":"games/five-nights-at-freddys-4/index.html","cover":"assets/covers/five-nights-at-freddys-4.webp"},{"id":"crossy-road","title":"Crossy Road","category":"Arcade","edition":"Arcade","color":"#525472","url":"games/crossy-road/index.html","cover":"assets/covers/crossy-road.webp"},{"id":"angry-birds","title":"Angry Birds","category":"Puzzle","edition":"Puzzle","color":"#525472","url":"games/angry-birds/index.html","cover":"assets/covers/angry-birds.webp"},{"id":"granny","title":"Granny","category":"Horror","edition":"Horror","color":"#525472","url":"games/granny/index.html","cover":"assets/covers/granny.webp"},{"id":"granny-chapter-two","title":"Granny: Chapter Two","category":"Horror","edition":"Horror","color":"#525472","url":"games/granny-chapter-two/index.html","cover":"assets/covers/granny-chapter-two.webp"},{"id":"paper-io-2","title":"Paper.io 2","category":"Arcade","edition":"Arcade","color":"#525472","url":"games/paper-io-2/index.html","cover":"assets/covers/paper-io-2.webp"},{"id":"snake-io","title":"Snake.io","category":"Arcade","edition":"Arcade","color":"#525472","url":"games/snake-io/index.html","cover":"assets/covers/snake-io.webp"},{"id":"hill-climb-racing-lite","title":"Hill Climb Racing Lite","category":"Corse","edition":"Corse","color":"#525472","url":"games/hill-climb-racing-lite/index.html","cover":"assets/covers/hill-climb-racing-lite.webp"},{"id":"level-devil","title":"Level Devil","category":"Platform","edition":"Platform","color":"#525472","url":"games/level-devil/index.html","cover":"assets/covers/level-devil.webp"},{"id":"hole-io","title":"Hole.io","category":"Arcade","edition":"Arcade","color":"#525472","url":"games/hole-io/index.html","cover":"assets/covers/hole-io.webp"},{"id":"spiral-roll","title":"Spiral Roll","category":"Arcade","edition":"Arcade","color":"#525472","url":"games/spiral-roll/index.html","cover":"assets/covers/spiral-roll.webp"}]</script>
+<script>
+'use strict';
+const games = JSON.parse(document.getElementById('game-data').textContent);
+const byId = new Map(games.map(game => [game.id, game]));
+const get = id => document.getElementById(id);
+const search = get('search');
+const favoritesButton = get('favorites');
+let playerRequest = 0;
+let activeFilter = 'Tutti';
+let onlyFavorites = false;
+let lastCardId = '';
+let favorites = new Set();
+try {
+  const saved = JSON.parse(localStorage.getItem('arcade-favorites-v1') || '[]');
+  if (Array.isArray(saved)) favorites = new Set(saved.filter(id => byId.has(id)));
+} catch {}
+
+const categories = ['Tutti', ...new Set(games.map(game => game.category))];
+const normalize = value => value.toLocaleLowerCase('it').normalize('NFD').replace(/\p{M}/gu,'');
+get('hero-summary').textContent = games.length ? games.length + ' giochi da esplorare' : 'Il catalogo è in preparazione.';
+
+function makeCard(game) {
+  const card = document.createElement('article');
+  card.className = 'card';
+  const link = document.createElement('a');
+  link.className = 'game-link';
+  link.href = '#gioco/' + game.id;
+  link.dataset.game = game.id;
+  const cover = document.createElement('div');
+  cover.className = 'cover';
+  cover.style.setProperty('--hue', game.color);
+  const initials = document.createElement('b');
+  initials.textContent = game.id === '2048' ? '2048' : game.title.split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+  initials.setAttribute('aria-hidden','true');
+  cover.append(initials);
+  if (game.cover) {
+    const artwork = document.createElement('img');
+    artwork.src = game.cover;
+    artwork.alt = '';
+    artwork.loading = 'lazy';
+    artwork.decoding = 'async';
+    artwork.addEventListener('error', () => artwork.remove(), {once: true});
+    cover.append(artwork);
+  }
+  const version = game.version;
+  if (version) {
+    const label = document.createElement('span');
+    label.className = 'cover-version';
+    label.textContent = version;
+    label.setAttribute('aria-hidden', 'true');
+    cover.append(label);
+  }
+
+  const copy = document.createElement('div');
+  copy.className = 'card-copy';
+  const name = document.createElement('h3');
+  name.textContent = game.title;
+  const meta = document.createElement('small');
+  meta.textContent = game.edition;
+  copy.append(name, meta);
+  link.append(cover, copy);
+  const star = document.createElement('button');
+  star.className = 'star';
+  star.type = 'button';
+  const isSaved = favorites.has(game.id);
+  star.textContent = isSaved ? '★' : '☆';
+  star.setAttribute('aria-pressed', String(isSaved));
+  star.setAttribute('aria-label', (isSaved ? 'Rimuovi dai preferiti: ' : 'Aggiungi ai preferiti: ') + game.title);
+  star.addEventListener('click', () => {
+    if (favorites.has(game.id)) favorites.delete(game.id);
+    else favorites.add(game.id);
+    try { localStorage.setItem('arcade-favorites-v1', JSON.stringify([...favorites])); } catch {}
+    if (onlyFavorites && isSaved) { render(); get('catalog-title').focus({preventScroll:true}); return; }
+    const updated = makeCard(game);
+    card.replaceWith(updated);
+    updated.querySelector('button').focus({preventScroll:true});
+  });
+  card.append(link, star);
+  return card;
+}
+
+function render() {
+  const query = normalize(search.value.trim());
+  const matches = games.filter(game =>
+    (!onlyFavorites || favorites.has(game.id)) &&
+    (activeFilter === 'Tutti' || activeFilter === game.category) &&
+    normalize(game.title).includes(query)
+  );
+  get('games').replaceChildren(...matches.map(makeCard));
+  get('count').textContent = matches.length + (matches.length === 1 ? ' gioco' : ' giochi');
+  get('catalog-title').textContent = onlyFavorites ? 'Preferiti' : 'Tutti i giochi';
+  get('hero').hidden = Boolean(query || onlyFavorites);
+  get('empty').hidden = matches.length !== 0;
+  get('empty').textContent = onlyFavorites && !query ? 'Usa la stella sulle schede per aggiungere un gioco ai preferiti.' : games.length ? 'Nessun gioco trovato.' : 'Il catalogo è ancora vuoto.';
+}
+
+for (const category of categories) {
+  const button = document.createElement('button');
+  button.className = 'filter';
+  button.type = 'button';
+  button.textContent = category;
+  button.setAttribute('aria-pressed', String(category === activeFilter));
+  button.addEventListener('click', () => {
+    activeFilter = category;
+    for (const item of get('filters').children) item.setAttribute('aria-pressed', String(item === button));
+    render();
+  });
+  get('filters').append(button);
+}
+
+function showHome() {
+  playerRequest++;
+  get('player').hidden = true;
+  get('frame-slot').replaceChildren();
+  get('home').hidden = false;
+}
+
+async function showGame(game) {
+  const request = ++playerRequest;
+  get('home').hidden = true;
+  get('player').hidden = false;
+  get('game-title').textContent = game.title;
+  const playerCover = get('player-cover');
+  playerCover.hidden = !game.cover;
+  if (game.cover) playerCover.src = game.cover;
+  const note = get('player-note');
+  note.textContent = game.notice || '';
+  note.hidden = !game.notice;
+  const frame = document.createElement('iframe');
+  frame.className = 'player-frame game-' + game.id;
+  frame.title = game.title;
+  frame.allowFullscreen = true;
+  frame.allow = 'autoplay; fullscreen; gamepad *; keyboard-map *;';
+  get('frame-slot').replaceChildren();
+  frame.src = game.url;
+  if (request !== playerRequest) return;
+  get('frame-slot').replaceChildren(frame);
+  get('fullscreen').hidden = typeof frame.requestFullscreen !== 'function';
+  get('game-title').focus({preventScroll:true});
+  window.scrollTo(0,0);
+}
+
+function route() {
+  const game = byId.get(location.hash.slice('#gioco/'.length));
+  if (location.hash.startsWith('#gioco/') && game) { lastCardId = game.id; showGame(game); return; }
+  showHome();
+  if (location.hash === '#catalogo') get('catalog-title').focus({preventScroll:true});
+  else if (lastCardId) {
+    get('games').querySelector('[data-game="' + lastCardId + '"]')?.focus({preventScroll:true});
+    lastCardId = '';
+  }
+}
+
+search.addEventListener('input', () => {
+  if (!get('player').hidden) location.hash = '#catalogo';
+  render();
+});
+favoritesButton.addEventListener('click', () => {
+  if (!get('player').hidden) location.hash = '#catalogo';
+  onlyFavorites = !onlyFavorites;
+  favoritesButton.setAttribute('aria-pressed', String(onlyFavorites));
+  render();
+});
+get('back').addEventListener('click', () => { location.hash = '#catalogo'; });
+get('fullscreen').addEventListener('click', async () => {
+  const frame = get('frame-slot').querySelector('iframe');
+  if (!frame) return;
+  try { await frame.requestFullscreen(); frame.focus(); }
+  catch {
+    const note = get('player-note');
+    note.textContent = 'Schermo intero non disponibile in questo browser.';
+    note.hidden = false;
+  }
+});
+document.querySelector('.brand').addEventListener('click', () => {
+  search.value = '';
+  onlyFavorites = false;
+  favoritesButton.setAttribute('aria-pressed', 'false');
+  get('filters').firstElementChild.click();
+  window.scrollTo(0,0);
+});
+document.addEventListener('keydown', event => {
+  if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.target.closest('input, textarea, [contenteditable]')) {
+    event.preventDefault();
+    search.focus();
+  }
+});
+window.addEventListener('hashchange', route);
+render();
+route();
+</script>
+</body>
+</html>
