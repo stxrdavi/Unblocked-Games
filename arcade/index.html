@@ -7,12 +7,12 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=profile">
+<link rel="stylesheet" href="assets/arcade.css?v=profile-search">
 </head>
 <body>
 <header class="top"><div class="shell">
   <a class="brand" href="#" aria-label="Arcade, home">Arcade<span aria-hidden="true">.</span></a>
-  <label class="top-search"><span class="icon-search" aria-hidden="true"></span><input id="search" type="search" aria-label="Cerca un gioco" placeholder="Cerca un gioco…" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
+  <label class="top-search"><span class="icon-search" aria-hidden="true"></span><input id="search" type="search" aria-label="Cerca giochi o profili" placeholder="Cerca giochi o profili…" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
   <div class="header-actions">
     <button class="saved" type="button" id="favorites" aria-pressed="false">☆ Preferiti</button>
     <button class="saved" type="button" id="account-button">Accedi</button>
@@ -26,6 +26,11 @@
         <img class="hero-image" id="hero-image" alt="">
         <a class="hero-game" id="hero-game"><span id="hero-game-title"></span><span aria-hidden="true">↗</span></a>
       </div>
+    </section>
+    <section id="profile-results" aria-labelledby="profile-results-title" hidden>
+      <h2 id="profile-results-title">Profili</h2>
+      <p id="profile-search-status" role="status"></p>
+      <div id="profile-matches"></div>
     </section>
     <section id="catalogo" aria-labelledby="catalog-title">
       <div class="catalog-head"><h2 id="catalog-title" tabindex="-1">Tutti i giochi</h2><p id="count" class="count" aria-live="polite"></p></div>
@@ -81,6 +86,13 @@
     <label><input name="removePhoto" type="checkbox"> Rimuovi la foto</label>
     <div class="profile-form-actions"><button class="secondary profile-edit" type="submit">Salva modifiche</button> <button class="secondary" type="button" id="profile-cancel">Annulla</button></div>
   </form>
+</dialog>
+<dialog id="public-profile" aria-labelledby="public-profile-name">
+  <button type="button" class="secondary profile-close" id="public-profile-close" aria-label="Chiudi profilo" autofocus>×</button>
+  <div class="profile-heading">
+    <div class="profile-avatar" aria-hidden="true"><span id="public-profile-initial"></span><img id="public-profile-avatar" alt="" hidden></div>
+    <div class="profile-identity"><p>Profilo giocatore</p><h2 id="public-profile-name"></h2><p id="public-profile-bio" hidden></p></div>
+  </div>
 </dialog>
 <dialog id="account-dialog" aria-labelledby="account-title">
   <form id="account-form">
@@ -649,5 +661,6 @@ render();
 route();
 </script>
 <script src="assets/profile.js?v=5"></script>
+<script src="assets/profile-search.js?v=1"></script>
 </body>
 </html>

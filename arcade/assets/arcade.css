@@ -160,7 +160,11 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
   .header-actions .saved { padding-inline: 8px; }
   #account-button { max-width: 88px; }
 }
-#profile-dialog {
+#profile-results { margin: 20px 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
+#profile-results h2 { margin: 0 0 8px; font: 700 20px var(--display); }
+#profile-search-status { margin: 0; color: var(--muted); }
+#profile-matches { display: flex; flex-wrap: wrap; gap: 8px; }
+#profile-dialog, #public-profile {
   --profile-space: clamp(16px,4vw,26px);
   width: min(620px,calc(100% - 24px));
   max-height: 90dvh;
@@ -171,7 +175,7 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
   color: var(--ink);
   box-shadow: 0 25px 80px #000a;
 }
-#profile-dialog::backdrop { background: #0d0919c9; backdrop-filter: blur(4px); }
+#profile-dialog::backdrop, #public-profile::backdrop { background: #0d0919c9; backdrop-filter: blur(4px); }
 .profile-close { position:absolute; top:12px; right:12px; width:40px; height:40px; padding:0; font-size:22px; line-height:1; }
 .profile-heading {
   display: grid;
@@ -196,11 +200,11 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
   color: #231539;
   font: 700 34px/1 var(--display);
 }
-#profile-avatar { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:var(--paper); }
+#profile-avatar, #public-profile-avatar { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:var(--paper); }
 .profile-identity { overflow-wrap:anywhere; }
 .profile-identity > p:first-child { margin:0 0 4px; color:#d6c6eb; font-size:13px; }
-#profile-name { margin:0; font:700 clamp(24px,5vw,38px)/1.1 var(--display); letter-spacing:-.04em; }
-#profile-bio { margin:8px 0 0; white-space:pre-wrap; color:#e0d5ef; font-size:14px; }
+#profile-name, #public-profile-name { margin:0; font:700 clamp(24px,5vw,38px)/1.1 var(--display); letter-spacing:-.04em; }
+#profile-bio, #public-profile-bio { margin:8px 0 0; white-space:pre-wrap; color:#e0d5ef; font-size:14px; }
 .profile-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:var(--profile-space); }
 .profile-stats div {
   display:grid;
