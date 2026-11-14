@@ -173,6 +173,7 @@
     </div>
     <p id="account-status" role="status" hidden></p>
     <div class="account-actions">
+      <button class="secondary" type="button" id="account-guest" hidden>Continua come ospite</button>
       <button class="secondary" type="submit" id="account-submit">Accedi</button>
     </div>
   </form>
@@ -393,7 +394,7 @@ function accountView() {
   accountButton.textContent = username || 'Accedi';
   get('account-mode').textContent = !serverMode
     ? 'Apri Arcade con Avvia-Arcade.cmd per usare gli account.'
-    : register ? 'Scegli uno username e una password. Non serve un’email.' : 'Accedi per aprire il tuo profilo e vedere le statistiche.';
+    : register ? 'Crea un account per salvare la tua attività di gioco sul profilo. Bastano uno username e una password, senza email.' : 'Accedi per aprire il tuo profilo e vedere le statistiche.';
 }
 
 function accountFeedback(message = '') {
@@ -430,7 +431,13 @@ get('account-close').addEventListener('click', () => accountDialog.close());
 get('account-login-mode').addEventListener('click', () => setAccountMode(false));
 get('account-switch').addEventListener('click', () => setAccountMode(true));
 get('account-reveal').addEventListener('click', () => showPassword(get('account-password').type === 'password'));
-accountDialog.addEventListener('close', () => { accountForm.reset(); showPassword(false); });
+get('account-guest').addEventListener('click', () => accountDialog.close());
+accountDialog.addEventListener('close', () => {
+  if (accountDialog.open) return;
+  get('account-guest').hidden = true;
+  accountForm.reset();
+  showPassword(false);
+});
 accountForm.addEventListener('submit', async event => {
   event.preventDefault();
   if (profileSession) {
@@ -751,6 +758,11 @@ window.addEventListener('pageshow', event => {
 });
 render();
 route();
+if (serverMode && !profileSession) {
+  setAccountMode(true);
+  get('account-guest').hidden = false;
+  accountDialog.showModal();
+}
 </script>
 <script src="assets/profile.js?v=5"></script>
 <script src="assets/profile-search.js?v=3"></script>
