@@ -420,11 +420,23 @@ function showPassword(visible) {
 }
 
 function setAccountMode(signUp) {
+  const animate = register !== signUp && accountDialog.open &&
+    matchMedia('(prefers-reduced-motion: no-preference)').matches;
   register = signUp;
   accountForm.elements.password.value = '';
   showPassword(false);
   accountFeedback();
   accountView();
+  if (animate) {
+    for (const id of ['account-title', 'account-mode', 'account-fields', 'account-submit']) {
+      const element = get(id);
+      for (const animation of element.getAnimations()) animation.cancel();
+      element.animate(
+        [{opacity:.35, transform:'translateX(' + (signUp ? 8 : -8) + 'px)'}, {opacity:1, transform:'translateX(0)'}],
+        {duration:190, easing:'ease-out'}
+      );
+    }
+  }
 }
 
 accountButton.addEventListener('click', () => {
