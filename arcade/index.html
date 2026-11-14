@@ -39,6 +39,7 @@
       <button id="back" class="secondary" type="button">← Catalogo</button>
       <img id="player-cover" class="player-cover" alt="" hidden>
       <h1 id="game-title" tabindex="-1"></h1>
+      <button id="game-audio" class="secondary" type="button" aria-pressed="false" disabled>🔊 Audio attivo</button>
       <button id="fullscreen" class="secondary" type="button">Schermo intero</button>
     </div>
     <div class="player-stage">
@@ -162,8 +163,30 @@ let playerRequest = 0;
 let gameBlobUrl;
 let loadingTimer;
 let gameDownload;
+let gameMuted = false;
+const audioButton = get('game-audio');
+
+function syncGameAudio() {
+  const frame = get('frame-slot').querySelector('iframe');
+  frame?.contentWindow?.postMessage({type:'arcade-audio', muted:gameMuted}, '*');
+}
+
+window.addEventListener('message', event => {
+  const frame = get('frame-slot').querySelector('iframe');
+  if (!frame || event.source !== frame.contentWindow || event.data?.type !== 'arcade-audio-ready') return;
+  audioButton.disabled = false;
+  syncGameAudio();
+});
+
+audioButton.addEventListener('click', () => {
+  gameMuted = !gameMuted;
+  audioButton.textContent = gameMuted ? '🔇 Audio disattivato' : '🔊 Audio attivo';
+  audioButton.setAttribute('aria-pressed', String(gameMuted));
+  syncGameAudio();
+});
 
 function clearGameFrame() {
+  audioButton.disabled = true;
   clearTimeout(loadingTimer);
   gameDownload?.abort();
   gameDownload = undefined;
@@ -548,7 +571,11 @@ async function showGame(game) {
       const base = '<base href="' + new URL(game.url, location.href).href + '">';
       const withBase = /<base\b/i.test(source) ? source
         : source.replace(/^(\s*<!doctype[^>]*>)?/i, '$&' + base);
-      gameBlobUrl = URL.createObjectURL(new Blob([withBase], {type:'text/html;charset=utf-8'}));
+      const audioScript = document.createElement('script');
+      audioScript.src = new URL('assets/game-audio.js', location.href).href;
+      audioScript.dataset.playerOrigin = location.origin;
+      const withAudio = withBase.replace(/^(\s*<!doctype[^>]*>)?/i, '$&' + audioScript.outerHTML);
+      gameBlobUrl = URL.createObjectURL(new Blob([withAudio], {type:'text/html;charset=utf-8'}));
       frame.src = gameBlobUrl;
       setGameLoading('Apertura del gioco…');
     } catch {
