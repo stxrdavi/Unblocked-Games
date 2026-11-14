@@ -187,8 +187,10 @@ h1 { margin: 0; font: 500 clamp(32px, 6vw, 54px)/.95 Georgia, serif; letter-spac
 fieldset { margin: 0; padding: 0; border: 0; min-inline-size: 0; }
 legend { margin-bottom: 5px; padding: 0; color: var(--muted); font-size: 11px; font-weight: 650; }
 .bet-options, .actions { display: flex; flex-wrap: wrap; gap: 6px; }
-.bet-options label { position: relative; }
-.bet-options input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.bet-total { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:13px; }
+.bet-total output { color:var(--gold); font-weight:700; font-variant-numeric:tabular-nums; }
+#clear-bet { padding:4px 7px; border:1px solid #617a70; border-radius:7px; background:#243b35; color:inherit; font:inherit; cursor:pointer; }
+#clear-bet:disabled, .chip:disabled { opacity:.45; cursor:default; }
 .chip {
   display: grid;
   place-items: center;
@@ -199,11 +201,11 @@ legend { margin-bottom: 5px; padding: 0; color: var(--muted); font-size: 11px; f
   background: #253d35;
   color: #f1e4c4;
   font-variant-numeric: tabular-nums;
+  font: inherit;
   font-weight: 700;
+  cursor: pointer;
 }
-.bet-options input:checked + .chip { border: 2px solid var(--gold); background: var(--gold); color: #282015; }
-.bet-options input:disabled + .chip { opacity: .5; }
-.bet-options input:disabled { cursor: default; }
+.chip:not(:disabled):hover { border-color:var(--gold); background:#3d5144; }
 .actions button {
   min-height: 38px;
   border: 1px solid #617a70;
@@ -218,7 +220,7 @@ legend { margin-bottom: 5px; padding: 0; color: var(--muted); font-size: 11px; f
 .actions button:not(:disabled):hover { border-color: var(--gold); }
 .actions .primary { border-color: var(--gold); background: var(--gold); color: #292015; }
 .actions .primary:hover:not(:disabled) { background: #ffe5b3; }
-:focus-visible, .bet-options input:focus-visible + .chip { outline: 2px solid #ffdd9b; outline-offset: 3px; }
+:focus-visible { outline: 2px solid #ffdd9b; outline-offset: 3px; }
 details { margin: 9px auto 0; color: var(--muted); font-size: 12px; text-align: center; }
 summary { width: fit-content; margin: auto; cursor: pointer; }
 details p { max-width: 64ch; margin: 7px auto 0; }
@@ -229,6 +231,7 @@ details p { max-width: 64ch; margin: 7px auto 0; }
   fieldset { flex-basis: 100%; }
   legend { margin-inline: auto; }
   .bet-options, .actions { justify-content: center; }
+  .bet-total { justify-content:center; }
 }
 @media (prefers-reduced-motion: reduce) {
   .card, .card.revealing .card-turn, .message[data-result="win"] { animation: none; }
@@ -261,11 +264,12 @@ details p { max-width: 64ch; margin: 7px auto 0; }
     <fieldset id="bets">
       <legend>Puntata in fiches</legend>
       <div class="bet-options">
-        <label><input type="radio" name="bet" value="2"><span class="chip">2</span></label>
-        <label><input type="radio" name="bet" value="10" checked><span class="chip">10</span></label>
-        <label><input type="radio" name="bet" value="20"><span class="chip">20</span></label>
-        <label><input type="radio" name="bet" value="50"><span class="chip">50</span></label>
+        <button type="button" class="chip" value="2" aria-label="Aggiungi 2 fiches">2</button>
+        <button type="button" class="chip" value="10" aria-label="Aggiungi 10 fiches">10</button>
+        <button type="button" class="chip" value="20" aria-label="Aggiungi 20 fiches">20</button>
+        <button type="button" class="chip" value="50" aria-label="Aggiungi 50 fiches">50</button>
       </div>
+      <div class="bet-total"><span id="bet-label">Totale</span> <output id="bet-total" aria-labelledby="bet-label">0 fiches</output> <button type="button" id="clear-bet" disabled>Azzera</button></div>
     </fieldset>
     <div class="actions">
       <button type="button" class="primary" id="deal">Distribuisci</button>
@@ -282,11 +286,12 @@ details p { max-width: 64ch; margin: 7px auto 0; }
 const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const suits = { '♠': 'picche', '♥': 'cuori', '♦': 'quadri', '♣': 'fiori' };
 const get = id => document.getElementById(id);
-const bets = [...document.querySelectorAll('input[name="bet"]')];
+const bets = [...document.querySelectorAll('.bet-options .chip')];
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const cards = { dealer: [], player: [] };
 let balance = 250;
 let stake = 0;
+let pendingBet = 0;
 let deck = [];
 let phase = 'ready';
 let dealerHidden = false;
@@ -380,13 +385,11 @@ function updateControls() {
   const ready = phase === 'ready';
   const canPlay = phase === 'player';
   get('balance').textContent = balance + ' fiches';
+  get('bet-total').textContent = (ready ? pendingBet : stake) + ' fiches';
   get('bets').disabled = !ready || balance < 2;
-  for (const bet of bets) bet.disabled = Number(bet.value) > balance;
-  if (ready && bets.find(bet => bet.checked)?.disabled) {
-    const affordable = bets.find(bet => !bet.disabled);
-    if (affordable) affordable.checked = true;
-  }
-  get('deal').disabled = !ready || balance < 2;
+  for (const bet of bets) bet.disabled = Number(bet.value) > balance - pendingBet;
+  get('clear-bet').disabled = !ready || pendingBet === 0;
+  get('deal').disabled = !ready || !pendingBet || pendingBet > balance;
   get('hit').disabled = get('stand').disabled = !canPlay;
   get('double').disabled = !canPlay || cards.player.length !== 2 || balance < stake;
   get('reset').hidden = !ready || balance >= 2;
@@ -398,6 +401,20 @@ function finish(message, result, payout) {
   setMessage(message, result);
   updateControls();
 }
+
+for (const bet of bets) {
+  bet.onclick = () => {
+    const amount = Number(bet.value);
+    if (phase !== 'ready' || pendingBet + amount > balance) return;
+    pendingBet += amount;
+    updateControls();
+  };
+}
+get('clear-bet').onclick = () => {
+  if (phase !== 'ready') return;
+  pendingBet = 0;
+  updateControls();
+};
 
 async function settleDealer() {
   phase = 'dealer';
@@ -418,8 +435,9 @@ async function settleDealer() {
 
 get('deal').onclick = async () => {
   if (phase !== 'ready') return;
-  stake = Number(bets.find(bet => bet.checked).value);
-  if (stake > balance) return;
+  if (!pendingBet || pendingBet > balance) return;
+  stake = pendingBet;
+  pendingBet = 0;
   phase = 'dealing';
   balance -= stake;
   deck = shuffledDeck();
