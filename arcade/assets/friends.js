@@ -1,3 +1,13 @@
+async function fetchArcadeFriends(session, signal) {
+  const token = await accessToken(session);
+  const response = await fetch(authBase+'/rest/v1/rpc/arcade_friends_list', {
+    method:'POST', headers:{apikey:authKey, Authorization:'Bearer '+token, 'Content-Type':'application/json'},
+    body:'{}', signal
+  });
+  if (!response.ok) throw new Error('Lista amici al momento non disponibile.');
+  return response.json();
+}
+
 (() => {
   'use strict';
   const section = get('friends');
@@ -21,7 +31,6 @@
       body:JSON.stringify(data)
     });
     if (!response.ok) throw new Error('Servizio amici non disponibile.');
-    if (name === 'friends_list') return response.json();
   }
 
   function button(text, click, className = 'secondary') {
@@ -135,7 +144,7 @@
     const request = ++revision;
     if (!session) return;
     try {
-      const result = await rpc('friends_list', {}, session);
+      const result = await fetchArcadeFriends(session);
       if (request !== revision || session !== profileSession) return;
       const changed = !ready || JSON.stringify(result) !== JSON.stringify(people);
       people = result;

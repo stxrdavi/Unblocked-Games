@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=dm">
+<link rel="stylesheet" href="assets/arcade.css?v=dm-launcher">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -107,11 +107,14 @@
   <p id="public-profile-status" role="status"></p>
   <div id="public-profile-friends" hidden></div>
 </dialog>
+<button type="button" id="dm-launcher" aria-haspopup="dialog" aria-controls="dm-dialog"><span aria-hidden="true">✉</span> Messaggi</button>
 <dialog id="dm-dialog" aria-labelledby="dm-title">
   <div class="auth-heading"><h2 id="dm-title"></h2><button type="button" class="secondary" id="dm-close">Chiudi</button></div>
-  <div id="dm-messages" role="log" aria-label="Messaggi" tabindex="0"></div>
+  <div id="dm-contacts" aria-label="Amici"></div>
+  <button type="button" class="secondary" id="dm-back" hidden>← Amici</button>
+  <div id="dm-messages" role="log" aria-label="Messaggi" tabindex="0" hidden></div>
   <p id="dm-status" role="status"></p>
-  <form id="dm-form">
+  <form id="dm-form" hidden>
     <label for="dm-text">Messaggio</label>
     <div><input id="dm-text" required maxlength="1000" autocomplete="off"><button class="secondary" type="submit" disabled>Invia</button></div>
   </form>
@@ -713,8 +716,8 @@ route();
 </script>
 <script src="assets/profile.js?v=5"></script>
 <script src="assets/profile-search.js?v=3"></script>
-<script src="assets/friends.js?v=2"></script>
-<script src="assets/dm.js?v=1"></script>
+<script src="assets/friends.js?v=3"></script>
+<script src="assets/dm.js?v=2"></script>
 <script src="assets/moderation.js?v=1"></script>
 </body>
 </html>

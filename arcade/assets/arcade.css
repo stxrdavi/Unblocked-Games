@@ -167,6 +167,17 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 .owner-tag { display:inline-block; vertical-align:middle; border-radius:7px; padding:3px 7px; background:var(--acid); color:#26320e; font:700 12px var(--display); }
 #dm-dialog { width:min(530px,calc(100% - 24px)); max-height:90dvh; border:1px solid var(--line); border-radius:18px; padding:16px; background:var(--paper); color:var(--ink); }
 #dm-dialog::backdrop { background:#100b1ad9; }
+#dm-launcher {
+  position:fixed; right:max(16px,env(safe-area-inset-right)); bottom:max(16px,env(safe-area-inset-bottom)); z-index:10;
+  display:inline-flex; align-items:center; gap:8px; min-height:46px; padding:0 16px;
+  border:1px solid #d4baff; border-radius:999px; background:#c1a6ff; color:#211239;
+  font:700 14px var(--display); cursor:pointer; box-shadow:0 5px 24px #0008;
+}
+#dm-launcher:hover { background:#d6c2ff; }
+html:has(:fullscreen) #dm-launcher { display:none; }
+#dm-contacts { display:grid; gap:7px; max-height:45dvh; overflow:auto; }
+#dm-contacts .secondary { text-align:left; width:100%; }
+#dm-back { margin-bottom:8px; }
 #dm-title { font:700 23px var(--display); margin:0; overflow-wrap:anywhere; }
 #dm-messages { display:flex; flex-direction:column; gap:8px; height:min(36dvh,320px); overflow:auto; padding:10px; background:var(--canvas); border-radius:12px; }
 .dm-message { align-self:flex-start; max-width:85%; padding:6px 10px; background:#342649; border-radius:12px; overflow-wrap:anywhere; white-space:pre-wrap; }
