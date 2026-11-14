@@ -17,7 +17,7 @@ const game = new URLSearchParams(location.search).get('game');
 const status = document.getElementById('status');
 
 async function launch() {
-  if (location.origin !== 'https://www.calcolatrice.website.' || !['speed-stars', 'bowmasters'].includes(game)) {
+  if (location.origin !== 'https://www.calcolatrice.website.' || !game || !/^[a-z0-9-]{1,80}$/.test(game)) {
     throw new Error('Gioco non disponibile');
   }
   const url = new URL(game+'/index.html', location.href);
@@ -25,13 +25,19 @@ async function launch() {
   if (!response.ok || !response.body) throw new Error('Scaricamento non riuscito');
   const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
   const source = await new Response(stream).text();
-  const html = source.replace(/^(\s*<!doctype[^>]*>)?/i, '$&<base href="'+url.href+'">');
+  const base = /<base\b[^>]*\bhref\s*=\s*["']([^"']*)["']/i;
+  const html = base.test(source)
+    ? source.replace(base, (tag, href) => tag.replace(/(\bhref\s*=\s*)(["'])[^"']*\2/i,
+        (_, attribute, quote) => attribute + quote + new URL(href, url).href + quote))
+    : source.replace(/^(\s*<!doctype[^>]*>)?/i, '$&<base href="'+url.href+'">');
   document.open();
   document.write(html);
   document.close();
+  parent.postMessage({type:'arcade-game-opened'}, 'https://www.calcolatrice.website');
 }
 
 launch().catch(() => {
+  parent.postMessage({type:'arcade-game-failed'}, 'https://www.calcolatrice.website');
   status.textContent = 'Impossibile caricare il gioco.';
   const retry = document.createElement('button');
   retry.textContent = 'Riprova';

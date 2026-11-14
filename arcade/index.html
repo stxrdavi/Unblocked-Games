@@ -140,10 +140,6 @@
 const titleOrder = new Intl.Collator('it', {numeric:true, sensitivity:'base'});
 const games = JSON.parse(document.getElementById('game-data').textContent);
 const byId = new Map(games.map(game => [game.id, game]));
-const compatibilityGames = new Set([
-  'speed-stars', 'monster-tracks', 'johnny-trigger', 'hill-climb-racing-lite', 'spiral-roll', 'bowmasters',
-  '8-ball-pool-classic'
-]);
 const gameOrigin = 'https://www.calcolatrice.website.';
 const get = id => document.getElementById(id);
 const featuredGames = games.filter(game => game.cover);
@@ -188,6 +184,7 @@ let playerRequest = 0;
 let gameBlobUrl;
 let loadingTimer;
 let gameDownload;
+let launcherCleanup;
 let gameMuted = false;
 const audioButton = get('game-audio');
 
@@ -211,6 +208,8 @@ audioButton.addEventListener('click', () => {
 });
 
 function clearGameFrame() {
+  launcherCleanup?.();
+  launcherCleanup = undefined;
   audioButton.disabled = true;
   clearTimeout(loadingTimer);
   gameDownload?.abort();
@@ -568,22 +567,37 @@ async function showGame(game) {
   loadingTimer = setTimeout(() => {
     if (request === playerRequest) setGameLoading('Il gioco sta impiegando più tempo del previsto.', true);
   },15000);
-  frame.addEventListener('load', () => {
+  const useLauncher = game.compressed && location.origin === 'https://www.calcolatrice.website';
+  const finishLoading = () => {
     if (request !== playerRequest) return;
     clearTimeout(loadingTimer);
     get('game-loading').hidden = true;
     get('frame-slot').setAttribute('aria-busy', 'false');
     get('fullscreen').hidden = typeof frame.requestFullscreen !== 'function';
-  }, {once:true});
+  };
+  if (useLauncher) {
+    window.addEventListener('message', handleLauncher);
+    launcherCleanup = () => window.removeEventListener('message', handleLauncher);
+  } else {
+    frame.addEventListener('load', finishLoading, {once:true});
+  }
+  function handleLauncher(event) {
+    if (event.origin !== gameOrigin || event.source !== frame.contentWindow || request !== playerRequest) return;
+    if (event.data?.type === 'arcade-game-opened') finishLoading();
+    else if (event.data?.type === 'arcade-game-failed') {
+      clearTimeout(loadingTimer);
+      setGameLoading('Impossibile caricare il gioco.', true, true);
+    } else return;
+  }
   frame.addEventListener('error', () => {
     if (request !== playerRequest) return;
     clearTimeout(loadingTimer);
     setGameLoading('Impossibile aprire il gioco.', true, true);
   }, {once:true});
   frame.sandbox = 'allow-scripts allow-pointer-lock';
-  if (compatibilityGames.has(game.id) && location.origin === 'https://www.calcolatrice.website') {
-    // The alternate host serves the same files with a separate browser origin.
-    const url = new URL(game.compressed ? 'games/launch.html' : game.url, gameOrigin+'/arcade/');
+  if (location.origin === 'https://www.calcolatrice.website') {
+    // Keep storage and browser APIs available to games on their own origin.
+    const url = new URL(game.compressed ? 'games/launch.html?v=2' : game.url, gameOrigin+'/arcade/');
     if (game.compressed) url.searchParams.set('game', game.id);
     frame.sandbox.add('allow-same-origin');
     frame.src = url.href;
