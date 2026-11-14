@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=friends">
+<link rel="stylesheet" href="assets/arcade.css?v=moderation">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -72,7 +72,7 @@
       <span id="profile-initial"></span>
       <img id="profile-avatar" alt="" hidden>
     </div>
-    <div class="profile-identity"><p>Il tuo profilo</p><h2 id="profile-name"></h2><p id="profile-bio" hidden></p></div>
+    <div class="profile-identity"><p>Il tuo profilo</p><h2><span id="profile-name"></span> <span class="owner-tag" id="own-owner-tag" hidden>Owner</span></h2><p id="profile-bio" hidden></p></div>
   </div>
   <dl class="profile-stats">
     <div><span class="profile-stat-icon" aria-hidden="true">◷</span><dt>Tempo di gioco</dt><dd id="profile-time">—</dd></div>
@@ -80,6 +80,7 @@
   </dl>
   <p id="profile-status" role="status"></p>
   <div class="profile-actions">
+    <button class="secondary" id="admin-open" type="button" hidden>Pannello admin</button>
     <button class="secondary profile-edit" id="profile-edit" type="button" aria-controls="profile-form" aria-expanded="false">Modifica profilo</button>
     <button class="secondary profile-logout" id="profile-logout" type="button">Esci dall’account</button>
   </div>
@@ -97,7 +98,7 @@
   <button type="button" class="secondary profile-close" id="public-profile-close" aria-label="Chiudi profilo" autofocus>×</button>
   <div class="profile-heading">
     <div class="profile-avatar" aria-hidden="true"><span id="public-profile-initial"></span><img id="public-profile-avatar" alt="" hidden></div>
-    <div class="profile-identity"><p>Profilo giocatore</p><h2 id="public-profile-name"></h2><p id="public-profile-bio" hidden></p></div>
+    <div class="profile-identity"><p>Profilo giocatore</p><h2><span id="public-profile-name"></span> <span class="owner-tag" id="public-owner-tag" hidden>Owner</span></h2><p id="public-profile-bio" hidden></p></div>
   </div>
   <dl class="profile-stats" id="public-profile-stats" hidden>
     <div><span class="profile-stat-icon" aria-hidden="true">◷</span><dt>Tempo di gioco</dt><dd id="public-profile-time"></dd></div>
@@ -105,6 +106,19 @@
   </dl>
   <p id="public-profile-status" role="status"></p>
   <div id="public-profile-friends" hidden></div>
+</dialog>
+<dialog id="admin-dialog" aria-labelledby="admin-title">
+  <form id="admin-form">
+    <div class="auth-heading"><h2 id="admin-title">Pannello admin</h2><button type="button" class="secondary" id="admin-close">Chiudi</button></div>
+    <label for="admin-name">Username</label>
+    <input id="admin-name" name="username" required minlength="3" maxlength="24" autocomplete="off">
+    <div class="profile-form-actions">
+      <button class="secondary" type="submit" value="status">Controlla stato</button>
+      <button class="secondary" type="submit" value="ban">Banna account</button>
+      <button class="secondary" type="submit" value="unban">Sblocca account</button>
+    </div>
+    <p id="admin-status" role="status"></p>
+  </form>
 </dialog>
 <dialog id="account-dialog" aria-labelledby="account-title">
   <form id="account-form">
@@ -691,5 +705,6 @@ route();
 <script src="assets/profile.js?v=5"></script>
 <script src="assets/profile-search.js?v=3"></script>
 <script src="assets/friends.js?v=1"></script>
+<script src="assets/moderation.js?v=1"></script>
 </body>
 </html>

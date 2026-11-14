@@ -164,6 +164,12 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 #profile-results h2 { margin: 0 0 8px; font: 700 20px var(--display); }
 #profile-search-status { margin: 0; color: var(--muted); }
 #profile-matches { display: flex; flex-wrap: wrap; gap: 8px; }
+.owner-tag { display:inline-block; vertical-align:middle; border-radius:7px; padding:3px 7px; background:var(--acid); color:#26320e; font:700 12px var(--display); }
+#admin-dialog { width:min(470px,calc(100% - 24px)); border:1px solid var(--line); border-radius:18px; padding:22px; background:var(--paper); color:var(--ink); }
+#admin-dialog::backdrop { background:#100b1ad9; }
+#admin-form { display:grid; gap:12px; }
+#admin-title, #admin-status { margin:0; }
+#admin-name { width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--canvas); color:inherit; font:inherit; }
 #friends { margin: 22px 0; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
 #friends h2 { margin: 0 0 10px; font: 700 23px var(--display); }
 #friend-strip { display:flex; gap:12px; overflow:auto; padding:4px; }
