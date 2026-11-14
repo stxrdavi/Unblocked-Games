@@ -56,6 +56,10 @@
     controls.hidden = !profileSession || !ready || !viewed || viewed === profileSession.username;
     if (controls.hidden) return;
     const relation = people.find(person => person.username === viewed)?.relationship;
+    if (relation === 'friend') {
+      const name = viewed;
+      controls.append(button('Messaggio', () => window.dispatchEvent(new CustomEvent('arcade-open-dm', {detail:name}))));
+    }
     const actions = {
       friend:[['Rimuovi amico','remove']],
       incoming:[['Accetta richiesta','accept'],['Rifiuta','decline']],

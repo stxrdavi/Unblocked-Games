@@ -165,6 +165,16 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 #profile-search-status { margin: 0; color: var(--muted); }
 #profile-matches { display: flex; flex-wrap: wrap; gap: 8px; }
 .owner-tag { display:inline-block; vertical-align:middle; border-radius:7px; padding:3px 7px; background:var(--acid); color:#26320e; font:700 12px var(--display); }
+#dm-dialog { width:min(530px,calc(100% - 24px)); max-height:90dvh; border:1px solid var(--line); border-radius:18px; padding:16px; background:var(--paper); color:var(--ink); }
+#dm-dialog::backdrop { background:#100b1ad9; }
+#dm-title { font:700 23px var(--display); margin:0; overflow-wrap:anywhere; }
+#dm-messages { display:flex; flex-direction:column; gap:8px; height:min(36dvh,320px); overflow:auto; padding:10px; background:var(--canvas); border-radius:12px; }
+.dm-message { align-self:flex-start; max-width:85%; padding:6px 10px; background:#342649; border-radius:12px; overflow-wrap:anywhere; white-space:pre-wrap; }
+.dm-message.mine { align-self:flex-end; background:#514074; }
+.dm-message time { display:block; color:#e0d2f4; font-size:11px; }
+#dm-status { margin:6px 0; color:var(--muted); font-size:13px; }
+#dm-form > div { display:flex; gap:8px; }
+#dm-text { min-width:0; flex:1; padding:9px; border:1px solid var(--line); border-radius:8px; background:var(--canvas); color:inherit; font:inherit; }
 #admin-dialog { width:min(470px,calc(100% - 24px)); border:1px solid var(--line); border-radius:18px; padding:22px; background:var(--paper); color:var(--ink); }
 #admin-dialog::backdrop { background:#100b1ad9; }
 #admin-form { display:grid; gap:12px; }
