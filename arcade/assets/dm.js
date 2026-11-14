@@ -26,12 +26,16 @@
     log.replaceChildren(...messages.map(message => {
       const bubble = document.createElement('div');
       bubble.className = message.mine ? 'dm-message mine' : 'dm-message';
-      bubble.dataset.id = message.id;
+      const row = document.createElement('div');
+      row.className = message.mine ? 'chat-message-row mine' : 'chat-message-row';
+      row.dataset.id = message.id;
+      const username = message.mine ? chat.session.username : chat.name;
       const time = document.createElement('time');
       time.dateTime = message.sent_at;
       time.textContent = (message.mine ? 'Tu · ' : chat.name+' · ')+clock.format(new Date(message.sent_at));
       bubble.append(document.createTextNode(message.body), time);
-      return bubble;
+      row.append(makeChatAvatar(username, message.avatar), bubble);
+      return row;
     }));
     if (atBottom) log.scrollTop = log.scrollHeight;
   }
@@ -44,11 +48,15 @@
     try {
       const token = await accessToken(current.session);
       if (chat !== current || profileSession !== current.session) return;
-      const response = await fetch(authBase+'/rest/v1/rpc/arcade_friend_chat', {
+      const options = {
         method:'POST', headers:{apikey:authKey,Authorization:'Bearer '+token,'Content-Type':'application/json'},
         body:JSON.stringify({profile_name:current.name,message}),
         signal:current.controller.signal
-      });
+      };
+      let response = await fetch(authBase+'/rest/v1/rpc/arcade_friend_chat_profiles', options);
+      if (response.status === 404 && (await response.json().catch(() => ({}))).code === 'PGRST202') {
+        response = await fetch(authBase+'/rest/v1/rpc/arcade_friend_chat', options);
+      }
       if (chat !== current || profileSession !== current.session) return;
       if (!response.ok) {
         if (response.status === 403) log.replaceChildren();

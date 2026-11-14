@@ -24,9 +24,13 @@
   async function request(name, data, token) {
     const headers = {apikey:authKey, 'Content-Type':'application/json'};
     if (token) headers.Authorization = 'Bearer '+token;
-    const response = await fetch(authBase+'/rest/v1/rpc/arcade_global_'+name, {
+    const options = {
       method:'POST', headers, body:JSON.stringify(data), signal:AbortSignal.timeout(10000)
-    });
+    };
+    let response = await fetch(authBase+'/rest/v1/rpc/arcade_global_'+(name === 'read' ? 'profiles' : name), options);
+    if (name === 'read' && response.status === 404 && (await response.json().catch(() => ({}))).code === 'PGRST202') {
+      response = await fetch(authBase+'/rest/v1/rpc/arcade_global_read', options);
+    }
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.code === 'P0001' ? error.message : 'Chat globale al momento non disponibile.');
@@ -34,18 +38,40 @@
     if (name === 'read') return response.json();
   }
 
+  function profileButton(username, content, openProfile, label) {
+    const button = document.createElement('button');
+    button.className = 'chat-profile';
+    button.type = 'button';
+    if (label) button.setAttribute('aria-label', 'Apri il profilo di '+username);
+    button.append(content);
+    button.onclick = openProfile;
+    return button;
+  }
+
   function render(messages) {
     if (String(messages.at(-1)?.id) === log.lastElementChild?.dataset.id) return;
     const atBottom = !log.lastElementChild || log.scrollHeight - log.scrollTop - log.clientHeight < 30;
     log.replaceChildren(...messages.map(message => {
+      const row = document.createElement('div');
+      row.className = 'chat-message-row';
+      row.dataset.id = message.id;
       const bubble = document.createElement('div');
       bubble.className = 'dm-message';
-      bubble.dataset.id = message.id;
+      const avatar = makeChatAvatar(message.username, message.avatar);
+      const openProfile = () => {
+        close();
+        get('public-profile').dispatchEvent(new CustomEvent('arcade-open-player', {detail:message}));
+      };
       const author = document.createElement('time');
       author.dateTime = message.sent_at;
-      author.textContent = message.username+' · '+clock.format(new Date(message.sent_at));
+      author.textContent = clock.format(new Date(message.sent_at));
+      const name = message.has_profile
+        ? profileButton(message.username, message.username, openProfile)
+        : message.username+' · ';
+      author.prepend(name);
       bubble.append(author, document.createTextNode(message.body));
-      return bubble;
+      row.append(message.has_profile ? profileButton(message.username, avatar, openProfile, true) : avatar, bubble);
+      return row;
     }));
     if (atBottom) log.scrollTop = log.scrollHeight;
   }
