@@ -9,7 +9,7 @@
   let play = {id:'', started:0};
   let refresh;
 
-  async function api(path, data, method = 'POST') {
+  async function api(path, data, method = 'POST', prefer) {
     const session = profileSession;
     if (!session) throw new Error('Accedi per continuare.');
     if (session.expiresAt && Date.now() >= session.expiresAt - 45000) {
@@ -25,12 +25,12 @@
     }
     session.expiresAt ??= Date.now()+session.expires_in*1000;
     const response = await fetch(base+'/rest/v1/'+path,{
-      method, headers:{apikey:key,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},
+      method, headers:{apikey:key,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json', ...(prefer ? {Prefer:prefer} : {})},
       body:JSON.stringify(data)
     });
     if (!response.ok) {
       const reason = await response.json().catch(()=>({}));
-      if (reason.code === '23505') throw new Error('Questo nome è già in uso.');
+      if (reason.code === '23505' && Object.hasOwn(data ?? {}, 'username')) throw new Error('Questo nome è già in uso.');
       if (reason.code === 'P0001') throw new Error(reason.message);
       throw new Error('Profilo non disponibile. Verifica la configurazione Supabase.');
     }
@@ -103,7 +103,11 @@
     const size=Math.min(image.width,image.height);
     canvas.getContext('2d').drawImage(image,(image.width-size)/2,(image.height-size)/2,size,size,0,0,256,256);
     image.close();
-    return canvas.toDataURL('image/webp',.82);
+    for (const quality of [.82,.65,.45]) {
+      const encoded = canvas.toDataURL('image/webp',quality);
+      if (encoded.startsWith('data:image/webp;base64,') && encoded.length <= 172000) return encoded;
+    }
+    throw new Error('Usa una foto più piccola o con meno dettagli.');
   }
   form.addEventListener('submit', async event=>{
     event.preventDefault();
@@ -117,15 +121,18 @@
       else if (form.elements.removePhoto.checked) changes.avatar='';
       const name=form.elements.name.value.trim().toLowerCase();
       if (!form.elements.name.disabled && name !== (profile?.username || session.username)) changes.username=name;
-      if (!profile) {
-        const encoded=session.access_token.split('.')[1].replaceAll('-','+').replaceAll('_','/');
-        const payload=JSON.parse(atob(encoded.padEnd(Math.ceil(encoded.length/4)*4,'=')));
-        await api('arcade_profiles',{user_id:payload.sub});
-      }
-      await api('arcade_profiles?user_id=not.is.null',changes,'PATCH');
-      await load();
+      const encoded=session.access_token.split('.')[1].replaceAll('-','+').replaceAll('_','/');
+      const {sub:userId}=JSON.parse(atob(encoded.padEnd(Math.ceil(encoded.length/4)*4,'=')));
+      const profilePath='arcade_profiles?'+new URLSearchParams({user_id:'eq.'+userId});
+      await api('arcade_profiles?on_conflict=user_id',{user_id:userId},'POST','resolution=ignore-duplicates,return=minimal');
+      await api(profilePath,changes,'PATCH','return=minimal');
+      profile = {...profile,...changes};
+      display();
       form.hidden=true;
       status.textContent='Profilo salvato.';
+      try { await load(); } catch {
+        status.textContent='Profilo salvato. Le statistiche verranno aggiornate alla prossima apertura.';
+      }
     } catch(error) { status.textContent=error.message; }
     finally { button.disabled=false; }
   });
