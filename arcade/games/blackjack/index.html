@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blackjack</title>
+<style>
+:root{color-scheme:dark;font:15px/1.4 system-ui,sans-serif;color:#f7f2e8;background:#08211d}
+*{box-sizing:border-box}body{margin:0}
+main{width:min(100% - 28px,850px);margin:16px auto 24px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+h1{margin:0;font:700 clamp(25px,6vw,46px)/1 Georgia,serif;letter-spacing:-.045em}
+.balance{border:1px solid #e9d3a45c;border-radius:9px;padding:6px 10px;color:#ffe0a2;font-weight:700;white-space:nowrap}
+.table{border:1px solid #779f795e;border-radius:22px;background:radial-gradient(ellipse at 50% 44%,#205d4a,#103b30 70%,#0b3027);box-shadow:inset 0 0 0 4px #061f1960;padding:13px clamp(10px,3vw,26px)}
+.hand{min-height:128px;text-align:center}
+h2{margin:0 0 7px;color:#f4d7a1;font-size:13px;font-weight:750}
+.cards{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;min-height:81px;align-items:center}
+.card{width:clamp(43px,11vw,59px);aspect-ratio:5/7;display:grid;grid-template-rows:1fr 1fr;place-items:center;padding:4px;border-radius:7px;border:1px solid #e6d9bd;background:#fffaed;color:#172322;box-shadow:0 3px 8px #0005;font:bold 20px/1 Georgia,serif}
+.card span:last-child{font-size:24px}.card.red{color:#aa243a}
+.card.back{display:grid;place-items:center;font-size:24px;color:#ffe0a2;border:3px solid #efe1ba;background:repeating-linear-gradient(45deg,#6c303b,#6c303b 4px,#4a222c 4px,#4a222c 8px)}
+#message{min-height:32px;display:grid;place-items:center;text-align:center;margin:3px 0 10px;border-block:1px solid #e8dcab36;color:#fff1d3;font-weight:650;padding:5px}
+.controls{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0}
+button,select{font:inherit;color:inherit;border:1px solid #84aa9266;border-radius:9px;padding:8px 12px;background:#153c32}
+button{cursor:pointer;font-weight:750}button:disabled{opacity:.45;cursor:default}
+button:not(:disabled):hover{border-color:#fde0a7}
+button.primary{background:#f6d49a;border-color:#f6d49a;color:#342308}
+:focus-visible{outline:2px solid #ffdf9f;outline-offset:3px}
+details{text-align:center;color:#cee0d5;font-size:12px}
+summary{cursor:pointer}details p{max-width:58ch;margin:7px auto 0}
+</style>
+</head>
+<body>
+<main>
+  <header><h1>Blackjack</h1><output class="balance" id="balance" aria-label="Saldo">250 fiches</output></header>
+  <div class="table">
+    <section class="hand" aria-labelledby="dealer-title">
+      <h2 id="dealer-title">Banco <span id="dealer-score"></span></h2>
+      <div class="cards" id="dealer"></div>
+    </section>
+    <p id="message" role="status">Scegli la puntata e distribuisci le carte.</p>
+    <section class="hand" aria-labelledby="player-title">
+      <h2 id="player-title">La tua mano <span id="player-score"></span></h2>
+      <div class="cards" id="player"></div>
+    </section>
+  </div>
+  <div class="controls">
+    <label for="bet">Puntata</label>
+    <select id="bet">
+      <option value="2">2 fiches</option>
+      <option value="10" selected>10 fiches</option>
+      <option value="20">20 fiches</option>
+      <option value="50">50 fiches</option>
+    </select>
+    <button type="button" class="primary" id="deal">Distribuisci</button>
+    <button type="button" id="hit" disabled>Carta</button>
+    <button type="button" id="stand" disabled>Stai</button>
+    <button type="button" id="double" disabled>Raddoppia</button>
+    <button type="button" id="reset" hidden>Riparti con 250 fiches</button>
+  </div>
+  <details><summary>Regole del tavolo</summary><p>Avvicinati a 21 senza superarlo. L’asso vale 1 o 11. Il banco si ferma a 17 o più, anche se l’asso vale 11. Il blackjack paga 3 a 2. In caso di parità recuperi la puntata. Puoi raddoppiare con le prime due carte pescandone una sola. Si gioca con fiches virtuali.</p></details>
+</main>
+<script>
+'use strict';
+const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const suits = ['♠','♥','♦','♣'];
+const get = id => document.getElementById(id);
+const bet = get('bet');
+let balance = 250;
+let stake = 0;
+let deck = [];
+let dealer = [];
+let player = [];
+let playing = false;
+
+function shuffledDeck() {
+  const cards = suits.flatMap(suit => ranks.map((rank,index)=>({suit,rank,value:Math.min(index+1,10)})));
+  for (let i=cards.length-1; i>0; i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [cards[i],cards[j]]=[cards[j],cards[i]];
+  }
+  return cards;
+}
+
+function score(cards) {
+  const total=cards.reduce((sum,card)=>sum+card.value,0);
+  return total<=11 && cards.some(card=>card.rank==='A') ? total+10 : total;
+}
+
+function showHand(id,cards,concealed) {
+  const children=cards.map((card,index)=>{
+    const element=document.createElement('div');
+    element.className='card';
+    if (concealed && index===1) {
+      element.classList.add('back');
+      element.textContent='✦';
+      element.setAttribute('aria-label','Carta coperta');
+      return element;
+    }
+    if (card.suit==='♥' || card.suit==='♦') element.classList.add('red');
+    for (const value of [card.rank,card.suit]) {
+      const label=document.createElement('span');
+      label.textContent=value;
+      element.append(label);
+    }
+    return element;
+  });
+  get(id).replaceChildren(...children);
+  const visibleScore=cards.length ? '· '+score(concealed ? cards.slice(0,1) : cards) : '';
+  get(id+'-score').textContent=visibleScore+(concealed ? ' + ?' : '');
+}
+
+function render() {
+  showHand('dealer',dealer,playing);
+  showHand('player',player,false);
+  get('balance').textContent=balance+' fiches';
+  bet.disabled=playing || balance<2;
+  for (const option of bet.options) option.disabled=Number(option.value)>balance;
+  if (!playing && bet.selectedOptions[0]?.disabled) {
+    const affordable=[...bet.options].find(option=>!option.disabled);
+    if (affordable) bet.value=affordable.value;
+  }
+  get('deal').disabled=playing || balance<2;
+  get('hit').disabled=get('stand').disabled=!playing;
+  get('double').disabled=!playing || player.length!==2 || balance<stake;
+  get('reset').hidden=playing || balance>=2;
+}
+
+function finish(message, payout) {
+  playing=false;
+  balance+=payout;
+  get('message').textContent=message;
+  render();
+}
+
+function settleDealer() {
+  while(score(dealer)<17) dealer.push(deck.pop());
+  const yours=score(player);
+  const theirs=score(dealer);
+  if (theirs>21) finish('Il banco sballa. Vinci!',stake*2);
+  else if (yours>theirs) finish('Vinci la mano!',stake*2);
+  else if (yours===theirs) finish('Parità. Puntata restituita.',stake);
+  else finish('Vince il banco.',0);
+}
+
+get('deal').onclick=()=>{
+  if (playing) return;
+  stake=Number(bet.value);
+  if (stake>balance) return;
+  balance-=stake;
+  deck=shuffledDeck();
+  player=[deck.pop()];
+  dealer=[deck.pop()];
+  player.push(deck.pop());
+  dealer.push(deck.pop());
+  playing=true;
+  if (score(player)===21 && score(dealer)===21) return finish('Blackjack per entrambi. Parità.',stake);
+  if (score(player)===21) return finish('Blackjack! Vincita 3 a 2.',stake*2.5);
+  if (score(dealer)===21) return finish('Blackjack del banco.',0);
+  get('message').textContent='Tocca a te.';
+  render();
+};
+
+function takeCard() {
+  player.push(deck.pop());
+  if (score(player)>21) finish('Hai sballato. Vince il banco.',0);
+  else if (score(player)===21) settleDealer();
+  else render();
+}
+
+get('hit').onclick=()=>{if (playing) takeCard();};
+get('stand').onclick=()=>{if (playing) settleDealer();};
+get('double').onclick=()=>{
+  if (!playing || player.length!==2 || balance<stake) return;
+  balance-=stake;
+  stake*=2;
+  takeCard();
+  if (playing) settleDealer();
+};
+get('reset').onclick=()=>{
+  if (playing || balance>=2) return;
+  balance=250;
+  player=[];
+  dealer=[];
+  get('message').textContent='Scegli la puntata e distribuisci le carte.';
+  render();
+};
+render();
+</script>
+</body>
+</html>
