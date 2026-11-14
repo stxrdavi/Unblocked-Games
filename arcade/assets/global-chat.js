@@ -12,6 +12,8 @@
   let reading = false;
   let sending = false;
   let ready = false;
+  let lastViewer;
+  let lastOwnership;
 
   function guestIdentity() {
     if (guestId) return guestId;
@@ -27,9 +29,13 @@
     const options = {
       method:'POST', headers, body:JSON.stringify(data), signal:AbortSignal.timeout(10000)
     };
-    let response = await fetch(authBase+'/rest/v1/rpc/arcade_global_'+(name === 'read' ? 'profiles' : name), options);
-    if (name === 'read' && response.status === 404 && (await response.json().catch(() => ({}))).code === 'PGRST202') {
-      response = await fetch(authBase+'/rest/v1/rpc/arcade_global_read', options);
+    const endpoint = authBase+'/rest/v1/rpc/arcade_global_';
+    let response = await fetch(endpoint+(name === 'read' ? 'messages_for_viewer' : name), options);
+    if (name === 'read') {
+      for (const fallback of ['profiles', 'read']) {
+        if (response.status !== 404 || (await response.clone().json().catch(() => ({}))).code !== 'PGRST202') break;
+        response = await fetch(endpoint+fallback, {...options, body:'{}'});
+      }
     }
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
@@ -48,15 +54,22 @@
     return button;
   }
 
-  function render(messages) {
-    if (String(messages.at(-1)?.id) === log.lastElementChild?.dataset.id) return;
+  function render(messages, session) {
+    const ownership = messages.map(message =>
+      message.mine === true || (message.mine === undefined && session?.username === message.username));
+    const signature = ownership.join(',');
+    if (lastViewer === session && lastOwnership === signature &&
+        String(messages.at(-1)?.id) === log.lastElementChild?.dataset.id) return;
+    lastViewer = session;
+    lastOwnership = signature;
     const atBottom = !log.lastElementChild || log.scrollHeight - log.scrollTop - log.clientHeight < 30;
-    log.replaceChildren(...messages.map(message => {
+    log.replaceChildren(...messages.map((message, index) => {
       const row = document.createElement('div');
-      row.className = 'chat-message-row';
+      const mine = ownership[index];
+      row.className = mine ? 'chat-message-row mine' : 'chat-message-row';
       row.dataset.id = message.id;
       const bubble = document.createElement('div');
-      bubble.className = 'dm-message';
+      bubble.className = mine ? 'dm-message mine' : 'dm-message';
       const avatar = makeChatAvatar(message.username, message.avatar);
       const openProfile = () => {
         close();
@@ -79,10 +92,13 @@
   async function refresh() {
     if (!panel.open || reading) return;
     reading = true;
+    const session = profileSession;
     try {
-      const messages = await request('read', {});
-      if (!panel.open) return;
-      render(messages);
+      const token = session ? await accessToken(session) : null;
+      if (session !== profileSession) return;
+      const messages = await request('read', {guest_id:session ? null : guestIdentity()}, token);
+      if (!panel.open || session !== profileSession) return;
+      render(messages, session);
       if (!sending && (!ready || !status.textContent || status.textContent === 'Scrivi il primo messaggio.')) {
         status.textContent = messages.length ? '' : 'Scrivi il primo messaggio.';
       }
@@ -117,6 +133,10 @@
   });
   get('dm-launcher').addEventListener('click', close);
   window.addEventListener('arcade-open-dm', close);
+  window.addEventListener('arcade-session-change', () => {
+    log.replaceChildren();
+    refresh();
+  });
   document.addEventListener('fullscreenchange', () => { if (document.fullscreenElement) close(); });
   form.addEventListener('submit', async event => {
     event.preventDefault();
