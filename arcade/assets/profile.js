@@ -1,33 +1,17 @@
 (() => {
   'use strict';
-  const base = 'https://usrvjyffaoucyahkpyjw.supabase.co';
-  const key = 'sb_publishable_FqDB6ZDEJwlVS19EvQhFng_oSYmq6lf';
   const dialog = get('profile-dialog');
   const form = get('profile-form');
   const status = get('profile-status');
   let profile;
-  let play = {id:'', started:0};
-  let refresh;
-
-  async function api(path, data, method = 'POST', prefer) {
-    const session = profileSession;
-    if (!session) throw new Error('Accedi per continuare.');
-    if (session.expiresAt && Date.now() >= session.expiresAt - 45000) {
-      refresh ??= fetch(base+'/auth/v1/token?grant_type=refresh_token',{
-        method:'POST', headers:{apikey:key,'Content-Type':'application/json'},
-        body:JSON.stringify({refresh_token:session.refresh_token})
-      }).then(async response=>{
-        if (!response.ok) throw new Error('Sessione scaduta. Accedi di nuovo.');
-        const result = await response.json();
-        Object.assign(session,result,{expiresAt:Date.now()+result.expires_in*1000});
-      }).finally(()=>{refresh=null;});
-      await refresh;
-    }
-    session.expiresAt ??= Date.now()+session.expires_in*1000;
-    const response = await fetch(base+'/rest/v1/'+path,{
-      method, headers:{apikey:key,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json', ...(prefer ? {Prefer:prefer} : {})},
+  let play = {id:'', started:0, session:null};
+  async function api(path, data, method = 'POST', prefer, session = profileSession) {
+    const token = await accessToken(session);
+    const response = await fetch(authBase+'/rest/v1/'+path,{
+      method, headers:{apikey:authKey,Authorization:'Bearer '+token,'Content-Type':'application/json', ...(prefer ? {Prefer:prefer} : {})},
       body:JSON.stringify(data)
     });
+    if (session !== profileSession) throw new Error('Accedi per continuare.');
     if (!response.ok) {
       const reason = await response.json().catch(()=>({}));
       if (reason.code === '23505' && Object.hasOwn(data ?? {}, 'username')) throw new Error('Questo nome è già in uso.');
@@ -48,11 +32,14 @@
   }
 
   async function load() {
+    const session = profileSession;
     const [profiles, stats] = await Promise.all([
       api('arcade_profiles?select=username,bio,avatar,renamed_at',undefined,'GET'),
       api('rpc/arcade_play_stats',{})
     ]);
     profile = profiles[0];
+    if (profile?.username) await rememberProfileName(session, profile.username);
+    if (session !== profileSession) return;
     display();
     const minutes = Math.floor(stats.reduce((sum,row)=>sum+Number(row.seconds),0)/60);
     get('profile-time').textContent = minutes >= 60 ? Math.floor(minutes/60)+' h '+minutes%60+' min' : minutes+' min';
@@ -60,6 +47,7 @@
   }
 
   window.addEventListener('arcade-profile-open', async () => {
+    const session = profileSession;
     profile = null;
     form.hidden = true;
     get('profile-edit').disabled = true;
@@ -68,16 +56,19 @@
     status.textContent = 'Caricamento…';
     display();
     dialog.showModal();
-    try { await load(); status.textContent=''; get('profile-edit').disabled=false; }
-    catch(error) { status.textContent=error.message; }
+    try {
+      await load();
+      if (session !== profileSession) return;
+      status.textContent='';
+      get('profile-edit').disabled=false;
+    } catch(error) {
+      if (session === profileSession) status.textContent=error.message;
+    }
   });
   get('profile-close').onclick = () => dialog.close();
   get('profile-logout').onclick = () => {
-    profileSession=null;
-    username=null;
     profile=null;
-    accountView();
-    dialog.close();
+    saveSession(null);
   };
   get('profile-cancel').onclick = () => { form.hidden=true; };
   get('profile-edit').onclick = () => {
@@ -112,28 +103,33 @@
   form.addEventListener('submit', async event=>{
     event.preventDefault();
     const button=form.querySelector('[type=submit]');
+    const session=profileSession;
     button.disabled=true;
     try {
-      const session=profileSession;
       const avatar=form.elements.photo.files[0];
       const changes={bio:form.elements.bio.value.trim()};
       if (avatar) changes.avatar=await photo(avatar);
       else if (form.elements.removePhoto.checked) changes.avatar='';
+      if (session !== profileSession) return;
       const name=form.elements.name.value.trim().toLowerCase();
       if (!form.elements.name.disabled && name !== (profile?.username || session.username)) changes.username=name;
       const encoded=session.access_token.split('.')[1].replaceAll('-','+').replaceAll('_','/');
       const {sub:userId}=JSON.parse(atob(encoded.padEnd(Math.ceil(encoded.length/4)*4,'=')));
       const profilePath='arcade_profiles?'+new URLSearchParams({user_id:'eq.'+userId});
-      await api('arcade_profiles?on_conflict=user_id',{user_id:userId},'POST','resolution=ignore-duplicates,return=minimal');
-      await api(profilePath,changes,'PATCH','return=minimal');
+      await api('arcade_profiles?on_conflict=user_id',{user_id:userId},'POST','resolution=ignore-duplicates,return=minimal',session);
+      await api(profilePath,changes,'PATCH','return=minimal',session);
       profile = {...profile,...changes};
+      if (changes.username) await rememberProfileName(session, changes.username);
+      if (session !== profileSession) return;
       display();
       form.hidden=true;
       status.textContent='Profilo salvato.';
       try { await load(); } catch {
         status.textContent='Profilo salvato. Le statistiche verranno aggiornate alla prossima apertura.';
       }
-    } catch(error) { status.textContent=error.message; }
+    } catch(error) {
+      if (session === profileSession) status.textContent=error.message;
+    }
     finally { button.disabled=false; }
   });
 
@@ -141,8 +137,8 @@
     const id=location.hash.startsWith('#gioco/') ? location.hash.slice(7) : '';
     const active=profileSession && !document.hidden && !dialog.open && byId.has(id);
     const now=performance.now();
-    if (!active || play.id!==id) {
-      play={id:active ? id : '',started:now};
+    if (!active || play.id!==id || play.session!==profileSession) {
+      play={id:active ? id : '',started:now,session:profileSession};
     } else if (now-play.started>=30000) {
       play.started=now;
       api('rpc/arcade_record_play',{game_id:id}).catch(()=>{});
