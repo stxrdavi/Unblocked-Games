@@ -20,7 +20,8 @@
       if (reason.code === 'P0001') throw new Error(reason.message);
       throw new Error('Profilo non disponibile. Verifica la configurazione Supabase.');
     }
-    return response.status === 204 ? null : response.json();
+    if (response.status === 204 || prefer?.split(',').includes('return=minimal')) return null;
+    return response.json();
   }
 
   function display() {
