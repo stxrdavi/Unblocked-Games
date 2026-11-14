@@ -162,9 +162,22 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 .auth-heading { display:flex; align-items:start; justify-content:space-between; gap:12px; }
 .auth-close { width:36px; height:36px; padding:0; font-size:22px; line-height:1; }
 #account-mode { margin:8px 0 18px; font-size:14px; }
-.auth-modes { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-bottom:19px; padding:4px; background:var(--canvas); border:1px solid var(--line); border-radius:12px; }
+.auth-modes { position:relative; isolation:isolate; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; margin-bottom:19px; padding:4px; background:var(--canvas); border:1px solid var(--line); border-radius:12px; }
+.auth-modes::before {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:4px auto 4px 4px;
+  width:calc(50% - 6px);
+  border-radius:8px;
+  background:var(--paper);
+  box-shadow:0 2px 6px #0005;
+  pointer-events:none;
+  transform:translateX(0);
+}
+.auth-modes:has(#account-switch[aria-pressed="true"]:not([hidden]))::before { transform:translateX(calc(100% + 4px)); }
 .auth-modes button { min-height:40px; border:0; border-radius:8px; cursor:pointer; background:transparent; color:var(--muted); font:inherit; font-weight:700; }
-.auth-modes button[aria-pressed="true"] { background:var(--paper); color:var(--violet); box-shadow:0 2px 6px #0005; }
+.auth-modes button[aria-pressed="true"] { color:var(--violet); }
 #account-fields { gap:6px; }
 #account-fields label[for="account-password"] { margin-top:8px; }
 #account-fields input { min-height:44px; }
@@ -339,6 +352,7 @@ html:has(:fullscreen) :is(#dm-launcher, #dm-dialog) { display:none; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  .auth-modes::before { transition:transform 320ms cubic-bezier(.2,.7,.25,1); }
   .hero-text { animation:arcade-appear 280ms ease-out both; }
   .hero-art { animation:arcade-fade 380ms ease-out both; }
   .player:not([hidden]) .player-head,
