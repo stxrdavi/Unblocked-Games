@@ -69,8 +69,9 @@
         } else {
           try {
             const response = await fetch(url);
+            if (!response.ok) throw new Error('HTTP ' + response.status);
             const text = await response.text();
-            await saveToCache(url, text);
+            await saveToCache(url, text).catch(() => {});
             resolve(text);
           } catch (err) {
             reject(err);
@@ -113,12 +114,18 @@
   function loadGame() {
     const iframe = document.getElementById("fr");
     getFileFromCache(FILE_URL).then((text) => {
+      const payload = new DOMParser().parseFromString(text, 'application/xml')
+        .querySelector('Module > Content');
+      if (!payload?.textContent.trim()) throw new Error('Game content missing');
       iframe.contentDocument.open();
-      iframe.contentDocument.write(text);
+      iframe.contentDocument.write(payload.textContent);
       iframe.contentDocument.close();
     }).catch((err) => {
       console.error('Error:', err);
-      alert('Oyun yüklenemedi.');
+      const retry = document.createElement('button');
+      retry.textContent = 'Impossibile caricare Spiral Roll. Riprova.';
+      retry.onclick = () => location.reload();
+      document.getElementById('container').replaceChildren(retry);
     });
   }
   window.onload = loadGame;
