@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=auth-slider-2">
+<link rel="stylesheet" href="assets/arcade.css?v=global-chat">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -122,7 +122,19 @@
   <p id="public-profile-status" role="status"></p>
   <div id="public-profile-friends" hidden></div>
 </dialog>
+<button type="button" id="global-launcher" aria-haspopup="dialog" aria-controls="global-chat" aria-expanded="false"><span aria-hidden="true">●</span> Chat globale</button>
 <button type="button" id="dm-launcher" aria-haspopup="dialog" aria-controls="dm-dialog" aria-expanded="false"><span aria-hidden="true">✉</span> Messaggi</button>
+<dialog id="global-chat" aria-labelledby="global-title">
+  <header class="dm-heading">
+    <h2 id="global-title">Chat globale</h2>
+    <button type="button" class="secondary" id="global-close" aria-label="Chiudi chat globale">×</button>
+  </header>
+  <div id="global-messages" role="log" aria-label="Messaggi pubblici" tabindex="0"></div>
+  <p id="global-status" role="status"></p>
+  <form id="global-form">
+    <div><input id="global-text" aria-label="Messaggio pubblico" placeholder="Scrivi a tutti…" required maxlength="500" autocomplete="off"><button class="secondary" type="submit" disabled>Invia</button></div>
+  </form>
+</dialog>
 <dialog id="dm-dialog" aria-labelledby="dm-title">
   <header class="dm-heading">
     <button type="button" class="secondary" id="dm-back" aria-label="Torna alla lista amici" hidden>←</button>
@@ -829,6 +841,7 @@ if (serverMode && !profileSession) {
 <script src="assets/game-search.js?v=1"></script>
 <script src="assets/friends.js?v=3"></script>
 <script src="assets/dm.js?v=3"></script>
+<script src="assets/global-chat.js?v=1"></script>
 <script src="assets/moderation.js?v=1"></script>
 </body>
 </html>

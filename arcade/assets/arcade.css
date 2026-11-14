@@ -196,37 +196,40 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 #profile-results { margin-top:10px; padding-top:8px; border-top:1px solid var(--line); }
 #profile-matches { display: flex; flex-wrap: wrap; gap: 8px; }
 .owner-tag { display:inline-block; vertical-align:middle; border-radius:7px; padding:3px 7px; background:var(--acid); color:#26320e; font:700 12px var(--display); }
-#dm-dialog {
+#dm-dialog, #global-chat {
   position:fixed; inset:auto max(16px,env(safe-area-inset-right)) calc(max(16px,env(safe-area-inset-bottom)) + 56px) auto;
   z-index:11; margin:0; width:min(420px,calc(100% - 32px)); max-height:calc(100dvh - 88px);
   border:1px solid var(--line); border-radius:18px; padding:0; background:var(--paper);
   color:var(--ink); box-shadow:0 14px 48px #000a; overflow:auto;
 }
-#dm-dialog[open] { display:flex; flex-direction:column; }
+#dm-dialog[open], #global-chat[open] { display:flex; flex-direction:column; }
+#global-chat { bottom:calc(max(16px,env(safe-area-inset-bottom)) + 112px); max-height:calc(100dvh - 140px); }
 .dm-heading { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--line); }
 .dm-heading .secondary { min-width:38px; padding:6px; font-size:18px; }
-#dm-close { margin-inline-start:auto; }
-#dm-launcher {
+#dm-close, #global-close { margin-inline-start:auto; }
+#dm-launcher, #global-launcher {
   position:fixed; right:max(16px,env(safe-area-inset-right)); bottom:max(16px,env(safe-area-inset-bottom)); z-index:10;
   display:inline-flex; align-items:center; gap:8px; min-height:46px; padding:0 16px;
   border:1px solid #d4baff; border-radius:999px; background:#c1a6ff; color:#211239;
   font:700 14px var(--display); cursor:pointer; box-shadow:0 5px 24px #0008;
 }
+#global-launcher { bottom:calc(max(16px,env(safe-area-inset-bottom)) + 56px); background:var(--surface); color:var(--ink); }
 #dm-launcher:hover { background:#d6c2ff; }
-html:has(:fullscreen) :is(#dm-launcher, #dm-dialog) { display:none; }
+#global-launcher:hover { background:#392951; }
+html:has(:fullscreen) :is(#dm-launcher, #dm-dialog, #global-launcher, #global-chat) { display:none; }
 #dm-contacts { display:grid; gap:7px; max-height:45dvh; overflow:auto; padding:12px; }
 #dm-contacts:empty { padding:0; }
 #dm-contacts .secondary { text-align:left; width:100%; }
-#dm-title { font:700 17px var(--display); margin:0; min-width:0; overflow-wrap:anywhere; }
-#dm-messages { display:flex; flex-direction:column; gap:8px; height:min(48dvh,390px); min-height:0; overflow:auto; padding:12px; background:var(--canvas); }
+#dm-title, #global-title { font:700 17px var(--display); margin:0; min-width:0; overflow-wrap:anywhere; }
+#dm-messages, #global-messages { display:flex; flex-direction:column; gap:8px; height:min(48dvh,390px); min-height:0; overflow:auto; padding:12px; background:var(--canvas); }
 .dm-message { align-self:flex-start; max-width:85%; padding:6px 10px; background:#342649; border-radius:12px; overflow-wrap:anywhere; white-space:pre-wrap; }
 .dm-message.mine { align-self:flex-end; background:#514074; }
 .dm-message time { display:block; color:#e0d2f4; font-size:11px; }
-#dm-status { margin:8px 12px; color:var(--muted); font-size:13px; }
-#dm-status:empty { display:none; }
-#dm-form { padding:10px 12px; border-top:1px solid var(--line); }
-#dm-form > div { display:flex; gap:8px; }
-#dm-text { min-width:0; flex:1; padding:9px; border:1px solid var(--line); border-radius:8px; background:var(--canvas); color:inherit; font:inherit; }
+#dm-status, #global-status { margin:8px 12px; color:var(--muted); font-size:13px; }
+#dm-status:empty, #global-status:empty { display:none; }
+#dm-form, #global-form { padding:10px 12px; border-top:1px solid var(--line); }
+#dm-form > div, #global-form > div { display:flex; gap:8px; }
+#dm-text, #global-text { min-width:0; flex:1; padding:9px; border:1px solid var(--line); border-radius:8px; background:var(--canvas); color:inherit; font:inherit; }
 #admin-dialog { width:min(470px,calc(100% - 24px)); border:1px solid var(--line); border-radius:18px; padding:22px; background:var(--paper); color:var(--ink); }
 #admin-dialog::backdrop { background:#100b1ad9; }
 #admin-form { display:grid; gap:12px; }
