@@ -432,8 +432,8 @@ function setAccountMode(signUp) {
       const element = get(id);
       for (const animation of element.getAnimations()) animation.cancel();
       element.animate(
-        [{opacity:.35, transform:'translateX(' + (signUp ? 8 : -8) + 'px)'}, {opacity:1, transform:'translateX(0)'}],
-        {duration:190, easing:'ease-out'}
+        [{opacity:.15, transform:'translateX(' + (signUp ? 22 : -22) + 'px)'}, {opacity:1, transform:'translateX(0)'}],
+        {duration:380, easing:'cubic-bezier(.2,.7,.25,1)'}
       );
     }
   }
@@ -751,14 +751,38 @@ favoritesButton.addEventListener('click', () => {
   favoritesButton.setAttribute('aria-pressed', String(onlyFavorites));
   render();
 });
+let catalogScroll;
 get('explore-catalog').addEventListener('click', event => {
   if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   event.preventDefault();
   if (location.hash !== '#catalogo') history.pushState(null, '', '#catalogo');
   get('catalog-title').focus({preventScroll:true});
-  get('catalogo').scrollIntoView({
-    behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
-  });
+  catalogScroll?.abort();
+  const catalog = get('catalogo');
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    catalog.scrollIntoView({behavior:'instant'});
+    return;
+  }
+
+  const start = window.scrollY;
+  const distance = Math.min(start + catalog.getBoundingClientRect().top,
+    document.scrollingElement.scrollHeight - window.innerHeight) - start;
+  if (Math.abs(distance) < 1) return;
+  const scroll = new AbortController();
+  catalogScroll = scroll;
+  const stop = () => scroll.abort();
+  for (const type of ['wheel', 'touchstart', 'pointerdown', 'keydown', 'hashchange']) {
+    window.addEventListener(type, stop, {passive:true, signal:scroll.signal});
+  }
+  const startedAt = performance.now();
+  function move(now) {
+    if (scroll.signal.aborted) return;
+    const progress = Math.min(1, (now - startedAt) / 650);
+    window.scrollTo({top:start + distance * (1 - (1 - progress) ** 3), behavior:'instant'});
+    if (progress < 1) requestAnimationFrame(move);
+    else stop();
+  }
+  requestAnimationFrame(move);
 });
 get('back').addEventListener('click', () => { location.hash = '#catalogo'; });
 get('fullscreen').addEventListener('click', async () => {
