@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=layout">
+<link rel="stylesheet" href="assets/arcade.css?v=player-favorite">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -53,6 +53,7 @@
         <h1 id="game-title" tabindex="-1"></h1>
       </div>
       <div class="player-actions">
+        <button id="game-favorite" class="secondary" type="button" aria-label="Gioco nei preferiti" aria-pressed="false"><span aria-hidden="true">☆</span> Preferiti</button>
         <button id="game-audio" class="secondary" type="button" aria-pressed="false" disabled>🔊 Audio attivo</button>
         <button id="fullscreen" class="secondary" type="button">Schermo intero</button>
       </div>
@@ -477,6 +478,25 @@ const categories = ['Tutti', ...new Set(games.map(game => game.category))];
 const normalize = value => value.toLocaleLowerCase('it').normalize('NFD').replace(/\p{M}/gu,'');
 get('hero-summary').textContent = games.length ? games.length + ' giochi da esplorare' : 'Il catalogo è in preparazione.';
 
+function toggleFavorite(id) {
+  if (favorites.has(id)) favorites.delete(id);
+  else favorites.add(id);
+  try { localStorage.setItem('arcade-favorites-v1', JSON.stringify([...favorites])); } catch {}
+}
+
+function updatePlayerFavorite(game) {
+  const button = get('game-favorite');
+  const saved = favorites.has(game.id);
+  button.setAttribute('aria-pressed', String(saved));
+  button.firstElementChild.textContent = saved ? '★' : '☆';
+  button.title = saved ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti';
+  button.onclick = () => {
+    toggleFavorite(game.id);
+    updatePlayerFavorite(game);
+    render();
+  };
+}
+
 function makeCard(game) {
   const card = document.createElement('article');
   card.className = 'card';
@@ -525,9 +545,7 @@ function makeCard(game) {
   star.setAttribute('aria-pressed', String(isSaved));
   star.setAttribute('aria-label', (isSaved ? 'Rimuovi dai preferiti: ' : 'Aggiungi ai preferiti: ') + game.title);
   star.addEventListener('click', () => {
-    if (favorites.has(game.id)) favorites.delete(game.id);
-    else favorites.add(game.id);
-    try { localStorage.setItem('arcade-favorites-v1', JSON.stringify([...favorites])); } catch {}
+    toggleFavorite(game.id);
     if (onlyFavorites && isSaved) { render(); get('catalog-title').focus({preventScroll:true}); return; }
     const updated = makeCard(game);
     card.replaceWith(updated);
@@ -579,6 +597,7 @@ async function showGame(game) {
   get('home').hidden = true;
   get('player').hidden = false;
   get('game-title').textContent = game.title;
+  updatePlayerFavorite(game);
   const playerCover = get('player-cover');
   playerCover.hidden = !game.cover;
   if (game.cover) playerCover.src = game.cover;
