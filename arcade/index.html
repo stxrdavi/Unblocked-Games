@@ -63,6 +63,7 @@
       </div>
       <div class="player-actions">
         <button id="game-favorite" class="secondary" type="button" aria-label="Gioco nei preferiti" aria-pressed="false"><span aria-hidden="true">☆</span> Preferiti</button>
+        <button id="game-reload" class="secondary" type="button"><span aria-hidden="true">↻</span> Ricarica gioco</button>
         <button id="game-audio" class="secondary" type="button" aria-pressed="false" disabled>🔊 Audio attivo</button>
         <button id="fullscreen" class="secondary" type="button">Schermo intero</button>
       </div>
@@ -271,7 +272,8 @@ function setGameLoading(message, retry = false, failed = false) {
   get('frame-slot').setAttribute('aria-busy', String(!failed));
 }
 
-get('game-loading-retry').addEventListener('click', route);
+get('game-loading-retry').addEventListener('click', reloadGame);
+get('game-reload').addEventListener('click', reloadGame);
 
 async function accountApi(action, data) {
   const response = await fetch(authBase+'/functions/v1/clever-handler', {
@@ -599,7 +601,13 @@ function showHome() {
   get('home').hidden = false;
 }
 
-async function showGame(game) {
+function reloadGame() {
+  if (get('player').hidden) return;
+  const game = byId.get(location.hash.slice('#gioco/'.length));
+  if (location.hash.startsWith('#gioco/') && game) showGame(game, {reloading:true});
+}
+
+async function showGame(game, {reloading = false} = {}) {
   const request = ++playerRequest;
   get('home').hidden = true;
   get('player').hidden = false;
@@ -620,8 +628,10 @@ async function showGame(game) {
   get('fullscreen').hidden = true;
   get('game-loading-title').textContent = game.title;
   setGameLoading(game.compressed ? 'Scaricamento del gioco…' : 'Apertura del gioco…');
-  get('game-title').focus({preventScroll:true});
-  window.scrollTo(0,0);
+  if (!reloading) {
+    get('game-title').focus({preventScroll:true});
+    window.scrollTo(0,0);
+  }
   loadingTimer = setTimeout(() => {
     if (request === playerRequest) setGameLoading('Il gioco sta impiegando più tempo del previsto.', true);
   },15000);
