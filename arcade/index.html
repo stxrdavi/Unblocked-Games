@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=auth-slider">
+<link rel="stylesheet" href="assets/arcade.css?v=auth-slider-2">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -165,7 +165,8 @@
       <button class="secondary auth-close" type="button" id="account-close" aria-label="Chiudi">×</button>
     </div>
     <p id="account-mode"></p>
-    <div class="auth-modes" role="group" aria-label="Modalità account">
+    <div class="auth-modes" id="auth-modes" role="group" aria-label="Modalità account">
+      <span class="auth-slider" aria-hidden="true"></span>
       <button type="button" id="account-login-mode" aria-pressed="true">Accedi</button>
       <button type="button" id="account-switch" aria-pressed="false">Crea account</button>
     </div>
@@ -397,6 +398,7 @@ function accountView() {
   get('account-submit').textContent = username ? 'Esci' : register ? 'Registrati' : 'Accedi';
   get('account-login-mode').setAttribute('aria-pressed', String(!register));
   get('account-switch').setAttribute('aria-pressed', String(register));
+  get('auth-modes').classList.toggle('is-register', register && !get('account-switch').hidden);
   get('account-title').textContent = register ? 'Crea il tuo account' : 'Accedi ad Arcade';
   get('account-username-hint').hidden = !register;
   get('account-password-hint').hidden = !register;
