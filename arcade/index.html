@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=profile-search">
+<link rel="stylesheet" href="assets/arcade.css?v=profile-stats">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -93,6 +93,11 @@
     <div class="profile-avatar" aria-hidden="true"><span id="public-profile-initial"></span><img id="public-profile-avatar" alt="" hidden></div>
     <div class="profile-identity"><p>Profilo giocatore</p><h2 id="public-profile-name"></h2><p id="public-profile-bio" hidden></p></div>
   </div>
+  <dl class="profile-stats" id="public-profile-stats" hidden>
+    <div><span class="profile-stat-icon" aria-hidden="true">◷</span><dt>Tempo di gioco</dt><dd id="public-profile-time"></dd></div>
+    <div><span class="profile-stat-icon" aria-hidden="true">★</span><dt>Gioco più giocato</dt><dd id="public-profile-game"></dd></div>
+  </dl>
+  <p id="public-profile-status" role="status"></p>
 </dialog>
 <dialog id="account-dialog" aria-labelledby="account-title">
   <form id="account-form">
@@ -661,6 +666,6 @@ render();
 route();
 </script>
 <script src="assets/profile.js?v=5"></script>
-<script src="assets/profile-search.js?v=1"></script>
+<script src="assets/profile-search.js?v=2"></script>
 </body>
 </html>
