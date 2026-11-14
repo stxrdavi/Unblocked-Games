@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css">
+<link rel="stylesheet" href="assets/arcade.css?v=profile">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -54,25 +54,31 @@
   </section>
 </main>
 <dialog id="profile-dialog" aria-labelledby="profile-name">
+  <button class="secondary profile-close" id="profile-close" type="button" aria-label="Chiudi profilo" autofocus>×</button>
   <div class="profile-heading">
-    <img id="profile-avatar" alt="" hidden>
-    <div><h2 id="profile-name"></h2><p id="profile-bio"></p></div>
-    <button class="secondary" id="profile-close">Chiudi</button>
+    <div class="profile-avatar" aria-hidden="true">
+      <span id="profile-initial"></span>
+      <img id="profile-avatar" alt="" hidden>
+    </div>
+    <div class="profile-identity"><p>Il tuo profilo</p><h2 id="profile-name"></h2><p id="profile-bio" hidden></p></div>
   </div>
   <dl class="profile-stats">
-    <div><dt>Tempo di gioco</dt><dd id="profile-time">—</dd></div>
-    <div><dt>Gioco più giocato</dt><dd id="profile-favorite">—</dd></div>
+    <div><span class="profile-stat-icon" aria-hidden="true">◷</span><dt>Tempo di gioco</dt><dd id="profile-time">—</dd></div>
+    <div><span class="profile-stat-icon" aria-hidden="true">★</span><dt>Gioco più giocato</dt><dd id="profile-favorite">—</dd></div>
   </dl>
   <p id="profile-status" role="status"></p>
-  <button class="secondary" id="profile-edit">Modifica</button>
-  <button class="secondary" id="profile-logout">Esci</button>
-  <form id="profile-form" hidden>
-    <label>Nome del profilo <input name="name" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_.\-]{3,24}"></label>
-    <small id="profile-rename"></small>
+  <div class="profile-actions">
+    <button class="secondary profile-edit" id="profile-edit" type="button" aria-controls="profile-form" aria-expanded="false">Modifica profilo</button>
+    <button class="secondary profile-logout" id="profile-logout" type="button">Esci dall’account</button>
+  </div>
+  <form id="profile-form" aria-labelledby="profile-edit-title" hidden>
+    <h3 id="profile-edit-title" tabindex="-1">Modifica profilo</h3>
+    <div><label>Nome del profilo <input name="name" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_.\-]{3,24}" aria-describedby="profile-rename"></label>
+    <small id="profile-rename"></small></div>
     <label>Descrizione <textarea name="bio" maxlength="300" rows="3"></textarea></label>
     <label>Foto profilo <input name="photo" type="file" accept="image/png,image/jpeg,image/webp"></label>
     <label><input name="removePhoto" type="checkbox"> Rimuovi la foto</label>
-    <div><button class="secondary" type="submit">Salva</button> <button class="secondary" type="button" id="profile-cancel">Annulla</button></div>
+    <div class="profile-form-actions"><button class="secondary profile-edit" type="submit">Salva modifiche</button> <button class="secondary" type="button" id="profile-cancel">Annulla</button></div>
   </form>
 </dialog>
 <dialog id="account-dialog" aria-labelledby="account-title">
@@ -584,6 +590,6 @@ window.addEventListener('hashchange', route);
 render();
 route();
 </script>
-<script src="assets/profile.js?v=3"></script>
+<script src="assets/profile.js?v=4"></script>
 </body>
 </html>

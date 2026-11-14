@@ -3,6 +3,8 @@
   const dialog = get('profile-dialog');
   const form = get('profile-form');
   const status = get('profile-status');
+  const edit = get('profile-edit');
+  const avatar = get('profile-avatar');
   let profile;
   let play = {id:'', started:0, session:null};
   async function api(path, data, method = 'POST', prefer, session = profileSession) {
@@ -25,10 +27,24 @@
     const name = profile?.username || profileSession.username;
     get('profile-name').textContent = name;
     accountButton.textContent = name;
-    get('profile-bio').textContent = profile?.bio || '';
-    const avatar = get('profile-avatar');
-    avatar.hidden = !profile?.avatar;
-    if (profile?.avatar) avatar.src = profile.avatar;
+    const bio = get('profile-bio');
+    bio.textContent = profile?.bio || '';
+    bio.hidden = !bio.textContent;
+    get('profile-initial').textContent = name.charAt(0).toLocaleUpperCase('it');
+    if (profile?.avatar) {
+      avatar.hidden = false;
+      avatar.src = profile.avatar;
+    } else {
+      avatar.hidden = true;
+      avatar.removeAttribute('src');
+    }
+  }
+  avatar.addEventListener('error', () => { avatar.hidden = true; });
+
+  function setEditing(active, focus = false) {
+    form.hidden = !active;
+    edit.setAttribute('aria-expanded', String(active));
+    if (focus) (active ? get('profile-edit-title') : edit).focus();
   }
 
   async function load() {
@@ -43,14 +59,14 @@
     display();
     const minutes = Math.floor(stats.reduce((sum,row)=>sum+Number(row.seconds),0)/60);
     get('profile-time').textContent = minutes >= 60 ? Math.floor(minutes/60)+' h '+minutes%60+' min' : minutes+' min';
-    get('profile-favorite').textContent = byId.get(stats[0]?.game)?.title || 'Nessuna partita registrata';
+    get('profile-favorite').textContent = byId.get(stats[0]?.game)?.title || 'Nessuna partita';
   }
 
   window.addEventListener('arcade-profile-open', async () => {
     const session = profileSession;
     profile = null;
-    form.hidden = true;
-    get('profile-edit').disabled = true;
+    setEditing(false);
+    edit.disabled = true;
     get('profile-time').textContent = '—';
     get('profile-favorite').textContent = '—';
     status.textContent = 'Caricamento…';
@@ -60,7 +76,7 @@
       await load();
       if (session !== profileSession) return;
       status.textContent='';
-      get('profile-edit').disabled=false;
+      edit.disabled=false;
     } catch(error) {
       if (session === profileSession) status.textContent=error.message;
     }
@@ -70,8 +86,12 @@
     profile=null;
     saveSession(null);
   };
-  get('profile-cancel').onclick = () => { form.hidden=true; };
-  get('profile-edit').onclick = () => {
+  get('profile-cancel').onclick = () => setEditing(false, true);
+  edit.onclick = () => {
+    if (!form.hidden) {
+      setEditing(false);
+      return;
+    }
     form.reset();
     const available = Date.parse(profile?.renamed_at) + 7*86400000;
     form.elements.name.value=profile?.username || profileSession.username;
@@ -81,7 +101,7 @@
       ? 'Prossima modifica dal '+new Date(available).toLocaleString('it-IT')
       : 'Puoi cambiare il nome ogni 7 giorni.';
     status.textContent='';
-    form.hidden=false;
+    setEditing(true, true);
   };
 
   async function photo(file) {
@@ -122,7 +142,7 @@
       if (changes.username) await rememberProfileName(session, changes.username);
       if (session !== profileSession) return;
       display();
-      form.hidden=true;
+      setEditing(false, true);
       status.textContent='Profilo salvato.';
       try { await load(); } catch {
         status.textContent='Profilo salvato. Le statistiche verranno aggiornate alla prossima apertura.';
