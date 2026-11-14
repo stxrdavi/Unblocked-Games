@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=dm-panel">
+<link rel="stylesheet" href="assets/arcade.css?v=layout">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -21,7 +21,7 @@
 <main class="shell">
   <div id="home">
     <section class="hero" id="hero">
-      <div class="hero-text"><h1>Scegli.<br><em>Gioca.</em></h1><p id="hero-summary"></p><a href="#catalogo" class="primary">Esplora il catalogo <span aria-hidden="true">↓</span></a></div>
+      <div class="hero-text"><h1>Scegli un gioco<span>.</span></h1><p id="hero-summary"></p><a href="#catalogo" class="primary">Esplora il catalogo <span aria-hidden="true">↓</span></a></div>
       <div class="hero-art" id="hero-art" hidden>
         <img class="hero-image" id="hero-image" alt="">
         <a class="hero-game" id="hero-game"><span id="hero-game-title"></span><span aria-hidden="true">↗</span></a>
@@ -48,10 +48,14 @@
   <section id="player" class="player" aria-labelledby="game-title" hidden>
     <div class="player-head">
       <button id="back" class="secondary" type="button">← Catalogo</button>
-      <img id="player-cover" class="player-cover" alt="" hidden>
-      <h1 id="game-title" tabindex="-1"></h1>
-      <button id="game-audio" class="secondary" type="button" aria-pressed="false" disabled>🔊 Audio attivo</button>
-      <button id="fullscreen" class="secondary" type="button">Schermo intero</button>
+      <div class="player-identity">
+        <img id="player-cover" class="player-cover" alt="" hidden>
+        <h1 id="game-title" tabindex="-1"></h1>
+      </div>
+      <div class="player-actions">
+        <button id="game-audio" class="secondary" type="button" aria-pressed="false" disabled>🔊 Audio attivo</button>
+        <button id="fullscreen" class="secondary" type="button">Schermo intero</button>
+      </div>
     </div>
     <div class="player-stage">
       <div id="frame-slot" aria-busy="false"></div>
