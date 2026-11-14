@@ -26,6 +26,7 @@
     stats.hidden = true;
     statsStatus.textContent = 'Caricamento statistiche…';
     dialog.showModal();
+    dialog.dispatchEvent(new CustomEvent('arcade-view-player', {detail:profile.username}));
     try {
       const response = await fetch(authBase+'/rest/v1/rpc/arcade_public_profile_stats', {
         method:'POST', headers:{apikey:authKey,'Content-Type':'application/json'},
@@ -99,6 +100,7 @@
   }
 
   search.addEventListener('input', update);
+  dialog.addEventListener('arcade-open-player', event => openProfile(event.detail));
   document.querySelector('.brand').addEventListener('click', update);
   update();
 })();

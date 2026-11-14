@@ -164,6 +164,19 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 #profile-results h2 { margin: 0 0 8px; font: 700 20px var(--display); }
 #profile-search-status { margin: 0; color: var(--muted); }
 #profile-matches { display: flex; flex-wrap: wrap; gap: 8px; }
+#friends { margin: 22px 0; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+#friends h2 { margin: 0 0 10px; font: 700 23px var(--display); }
+#friend-strip { display:flex; gap:12px; overflow:auto; padding:4px; }
+.friend-tile { display:grid; justify-items:center; align-content:start; gap:4px; width:100px; flex:0 0 100px; border:0; background:none; cursor:pointer; color:var(--ink); font:inherit; }
+.friend-tile strong, .friend-tile small { width:100%; overflow-wrap:anywhere; text-align:center; }
+.friend-tile small { color:var(--muted); }
+.friend-tile .friend-playing { color:var(--acid); }
+.friend-avatar { display:grid; place-items:center; width:64px; aspect-ratio:1; overflow:hidden; border-radius:50%; background:#392951; color:#e0cdff; font:700 25px var(--display); position:relative; }
+.friend-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+#friends-status, #public-profile-friends { color:var(--muted); }
+#friends-status:empty { display:none; }
+#friend-requests, #public-profile-friends { padding:12px; }
+.friend-request { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:6px 0; }
 .profile-result { display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px 5px 5px; }
 .profile-result-avatar { display: grid; place-items: center; position: relative; overflow: hidden; width: 32px; height: 32px; border-radius: 8px; background: #392951; color: #d4baff; }
 .profile-result-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }

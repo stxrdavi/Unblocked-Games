@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=profile-stats">
+<link rel="stylesheet" href="assets/arcade.css?v=friends">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -26,6 +26,12 @@
         <img class="hero-image" id="hero-image" alt="">
         <a class="hero-game" id="hero-game"><span id="hero-game-title"></span><span aria-hidden="true">↗</span></a>
       </div>
+    </section>
+    <section id="friends" aria-labelledby="friends-title" hidden>
+      <h2 id="friends-title">Amici</h2>
+      <div id="friend-strip"></div>
+      <p id="friends-status" role="status"></p>
+      <div id="friend-requests" hidden></div>
     </section>
     <section id="profile-results" aria-labelledby="profile-results-title" hidden>
       <h2 id="profile-results-title">Profili</h2>
@@ -98,6 +104,7 @@
     <div><span class="profile-stat-icon" aria-hidden="true">★</span><dt>Gioco più giocato</dt><dd id="public-profile-game"></dd></div>
   </dl>
   <p id="public-profile-status" role="status"></p>
+  <div id="public-profile-friends" hidden></div>
 </dialog>
 <dialog id="account-dialog" aria-labelledby="account-title">
   <form id="account-form">
@@ -236,6 +243,7 @@ async function accountApi(action, data) {
 }
 
 function setSession(session) {
+  const previous = profileSession;
   if (session && profileSession?.id === session.id) {
     Object.assign(profileSession, session);
   } else {
@@ -244,6 +252,7 @@ function setSession(session) {
     profileSession = session;
   }
   accountView();
+  if (previous !== profileSession) window.dispatchEvent(new Event('arcade-session-change'));
 }
 
 function saveSession(session) {
@@ -666,6 +675,7 @@ render();
 route();
 </script>
 <script src="assets/profile.js?v=5"></script>
-<script src="assets/profile-search.js?v=2"></script>
+<script src="assets/profile-search.js?v=3"></script>
+<script src="assets/friends.js?v=1"></script>
 </body>
 </html>
