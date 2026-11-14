@@ -14,6 +14,11 @@
   let chat;
   let listRequest;
 
+  function showPanel() {
+    if (!dialog.open) dialog.show();
+    launcher.setAttribute('aria-expanded', 'true');
+  }
+
   function render(messages) {
     const previous = log.lastElementChild?.dataset.id;
     if (messages.length && previous === String(messages.at(-1).id)) return;
@@ -85,7 +90,7 @@
     contacts.hidden = true;
     back.hidden = log.hidden = form.hidden = false;
     status.textContent = 'Caricamento messaggi…';
-    if (!dialog.open) dialog.showModal();
+    showPanel();
     input.focus();
     sync();
   }
@@ -97,7 +102,7 @@
     contacts.hidden = false;
     back.hidden = log.hidden = form.hidden = true;
     contacts.replaceChildren();
-    if (!dialog.open) dialog.showModal();
+    showPanel();
     get('dm-close').focus();
     const session = profileSession;
     if (!session) {
@@ -132,16 +137,23 @@
     }
   }
 
-  launcher.onclick = openContacts;
+  launcher.onclick = () => { if (dialog.open) dialog.close(); else openContacts(); };
   back.onclick = openContacts;
   document.addEventListener('fullscreenchange', () => {
     launcher.hidden = Boolean(document.fullscreenElement);
     if (launcher.hidden && dialog.open) dialog.close();
   });
   window.addEventListener('arcade-open-dm', event => openChat(event.detail));
-  get('dm-close').onclick = () => dialog.close();
+  get('dm-close').onclick = () => { dialog.close(); launcher.focus(); };
+  dialog.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    dialog.close();
+    launcher.focus();
+  });
   dialog.addEventListener('close', () => {
     if (dialog.open) return;
+    launcher.setAttribute('aria-expanded', 'false');
     resetChat();
   });
   window.addEventListener('arcade-session-change', () => {
