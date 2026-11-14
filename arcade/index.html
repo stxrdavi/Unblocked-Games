@@ -41,7 +41,15 @@
       <h1 id="game-title" tabindex="-1"></h1>
       <button id="fullscreen" class="secondary" type="button">Schermo intero</button>
     </div>
-    <div id="frame-slot"></div>
+    <div class="player-stage">
+      <div id="frame-slot" aria-busy="false"></div>
+      <div id="game-loading" class="game-loading" hidden>
+        <div class="game-loading-spinner" aria-hidden="true"></div>
+        <strong id="game-loading-title"></strong>
+        <p id="game-loading-status" role="status"></p>
+        <button type="button" class="secondary" id="game-loading-retry" hidden>Riprova</button>
+      </div>
+    </div>
     <p class="player-note" id="player-note" aria-live="polite" hidden></p>
   </section>
 </main>
@@ -112,12 +120,29 @@ let profileSession = null;
 let register = false;
 let playerRequest = 0;
 let gameBlobUrl;
+let loadingTimer;
+let gameDownload;
 
 function clearGameFrame() {
+  clearTimeout(loadingTimer);
+  gameDownload?.abort();
+  gameDownload = undefined;
+  get('game-loading').hidden = true;
+  get('frame-slot').setAttribute('aria-busy', 'false');
   get('frame-slot').replaceChildren();
   if (gameBlobUrl) URL.revokeObjectURL(gameBlobUrl);
   gameBlobUrl = undefined;
 }
+
+function setGameLoading(message, retry = false, failed = false) {
+  get('game-loading').hidden = false;
+  get('game-loading').classList.toggle('failed', failed);
+  get('game-loading-status').textContent = message;
+  get('game-loading-retry').hidden = !retry;
+  get('frame-slot').setAttribute('aria-busy', String(!failed));
+}
+
+get('game-loading-retry').addEventListener('click', route);
 
 async function accountApi(action, data) {
   if (action === 'logout') return {username:null};
@@ -348,12 +373,30 @@ async function showGame(game) {
   frame.allow = 'autoplay; fullscreen; gamepad *; keyboard-map *;';
   clearGameFrame();
   get('fullscreen').hidden = true;
+  get('game-loading-title').textContent = game.title;
+  setGameLoading(game.compressed ? 'Scaricamento del gioco…' : 'Apertura del gioco…');
+  get('game-title').focus({preventScroll:true});
+  window.scrollTo(0,0);
+  loadingTimer = setTimeout(() => {
+    if (request === playerRequest) setGameLoading('Il gioco sta impiegando più tempo del previsto.', true);
+  },15000);
+  frame.addEventListener('load', () => {
+    if (request !== playerRequest) return;
+    clearTimeout(loadingTimer);
+    get('game-loading').hidden = true;
+    get('frame-slot').setAttribute('aria-busy', 'false');
+    get('fullscreen').hidden = typeof frame.requestFullscreen !== 'function';
+  }, {once:true});
+  frame.addEventListener('error', () => {
+    if (request !== playerRequest) return;
+    clearTimeout(loadingTimer);
+    setGameLoading('Impossibile aprire il gioco.', true, true);
+  }, {once:true});
   frame.sandbox = 'allow-scripts allow-pointer-lock';
   if (game.compressed) {
-    note.textContent = 'Caricamento del gioco…';
-    note.hidden = false;
     try {
-      const response = await fetch(game.url + '.gz');
+      gameDownload = new AbortController();
+      const response = await fetch(game.url + '.gz',{signal:gameDownload.signal});
       if (!response.ok || !response.body) throw new Error('Caricamento fallito');
       const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
       const source = await new Response(stream).text();
@@ -363,11 +406,11 @@ async function showGame(game) {
         : source.replace(/^(\s*<!doctype[^>]*>)?/i, '$&' + base);
       gameBlobUrl = URL.createObjectURL(new Blob([withBase], {type:'text/html;charset=utf-8'}));
       frame.src = gameBlobUrl;
-      note.textContent = game.notice || '';
-      note.hidden = !game.notice;
+      setGameLoading('Apertura del gioco…');
     } catch {
       if (request !== playerRequest) return;
-      note.textContent = 'Impossibile caricare il gioco. Riprova o usa un browser aggiornato.';
+      clearTimeout(loadingTimer);
+      setGameLoading('Impossibile caricare il gioco. Riprova o usa un browser aggiornato.', true, true);
       return;
     }
   } else {
@@ -375,9 +418,6 @@ async function showGame(game) {
   }
   if (request !== playerRequest) return;
   get('frame-slot').replaceChildren(frame);
-  get('fullscreen').hidden = typeof frame.requestFullscreen !== 'function';
-  get('game-title').focus({preventScroll:true});
-  window.scrollTo(0,0);
 }
 
 function route() {
