@@ -117,7 +117,8 @@ const titleOrder = new Intl.Collator('it', {numeric:true, sensitivity:'base'});
 const games = JSON.parse(document.getElementById('game-data').textContent);
 const byId = new Map(games.map(game => [game.id, game]));
 const compatibilityGames = new Set([
-  'speed-stars', 'monster-tracks', 'johnny-trigger', 'hill-climb-racing-lite', 'spiral-roll', 'bowmasters'
+  'speed-stars', 'monster-tracks', 'johnny-trigger', 'hill-climb-racing-lite', 'spiral-roll', 'bowmasters',
+  '8-ball-pool-classic'
 ]);
 const gameOrigin = 'https://www.calcolatrice.website.';
 const get = id => document.getElementById(id);
