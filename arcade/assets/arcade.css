@@ -130,6 +130,22 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 #account-fields label { display: grid; gap: 4px; font-weight: 650; }
 #account-fields input { padding: 8px 10px; width: 100%; background: var(--canvas); border: 1px solid var(--line); border-radius: 8px; }
 .account-actions { display: flex; flex-wrap: wrap; justify-content: end; gap: 7px; }
+#account-dialog { padding: clamp(20px, 5vw, 30px); max-height: 90dvh; box-shadow: 0 24px 88px #0009; }
+.auth-heading { display:flex; align-items:start; justify-content:space-between; gap:12px; }
+.auth-close { width:36px; height:36px; padding:0; font-size:22px; line-height:1; }
+#account-mode { margin:8px 0 18px; font-size:14px; }
+.auth-modes { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-bottom:19px; padding:4px; background:var(--canvas); border:1px solid var(--line); border-radius:12px; }
+.auth-modes button { min-height:40px; border:0; border-radius:8px; cursor:pointer; background:transparent; color:var(--muted); font:inherit; font-weight:700; }
+.auth-modes button[aria-pressed="true"] { background:var(--paper); color:var(--violet); box-shadow:0 2px 6px #0005; }
+#account-fields { gap:6px; }
+#account-fields label[for="account-password"] { margin-top:8px; }
+#account-fields input { min-height:44px; }
+#account-fields small { color:var(--muted); }
+.auth-password { display:flex; gap:6px; }
+.auth-password input { min-width:0; }
+#account-status { padding:10px 12px; border-radius:8px; background:#422136; color:#ffd3e3; }
+#account-dialog .account-actions { margin-top:18px; }
+#account-dialog #account-submit { width:100%; min-height:44px; border-color:transparent; }
 #account-submit { background: var(--violet); color: #211239; }
 @media (max-width: 390px) {
   .header-actions .saved { padding-inline: 8px; }
