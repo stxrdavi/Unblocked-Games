@@ -35,7 +35,7 @@
 <main class="shell">
   <div id="home">
     <section class="hero" id="hero">
-      <div class="hero-text"><h1>Scegli un gioco<span>.</span></h1><p id="hero-summary"></p><a href="#catalogo" class="primary">Esplora il catalogo <span aria-hidden="true">↓</span></a></div>
+      <div class="hero-text"><h1>Scegli un gioco<span>.</span></h1><p id="hero-summary"></p><a href="#catalogo" class="primary" id="explore-catalog">Esplora il catalogo <span aria-hidden="true">↓</span></a></div>
       <div class="hero-art" id="hero-art" hidden>
         <img class="hero-image" id="hero-image" alt="">
         <a class="hero-game" id="hero-game"><span id="hero-game-title"></span><span aria-hidden="true">↗</span></a>
@@ -750,6 +750,15 @@ favoritesButton.addEventListener('click', () => {
   onlyFavorites = !onlyFavorites;
   favoritesButton.setAttribute('aria-pressed', String(onlyFavorites));
   render();
+});
+get('explore-catalog').addEventListener('click', event => {
+  if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  if (location.hash !== '#catalogo') history.pushState(null, '', '#catalogo');
+  get('catalog-title').focus({preventScroll:true});
+  get('catalogo').scrollIntoView({
+    behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'
+  });
 });
 get('back').addEventListener('click', () => { location.hash = '#catalogo'; });
 get('fullscreen').addEventListener('click', async () => {
