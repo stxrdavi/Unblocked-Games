@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celestrium Online | Save My Pet</title>
+    <link rel="icon" type="image/png" href="favicon.png?login.live.com">
+    <style>      html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:"Gill Sans",sans-serif;background:transparent}
+        .game-embed-container{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background-color:white;border-radius:10px;overflow:hidden;position:relative;box-sizing:border-box;color:#fff;text-align:center}
+        .button-wrapper{display:flex;flex-direction:column;align-items:center;gap:25px;padding:20px;width:100%;max-width:550px;box-sizing:border-box}
+        .logo-text{font-family:"Gill Sans",sans-serif;font-size:2.5rem;font-weight:bold;color:#fff;text-shadow:2px 2px 5px rgba(0,0,0,.6);padding-bottom:10px;  display:none;}
+        .button-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;width:100%;  display:none;}
+        @media (max-width:480px){.button-grid{grid-template-columns:1fr}.logo-text{font-size:2rem}}
+        .c-button{min-height:50px;appearance:none;border:2px solid rgba(0,0,0,.2);border-radius:8px;color:#fff;padding:10px 15px;font-size:18px;cursor:pointer;transition:all .2s ease-in-out;text-align:center;display:flex;align-items:center;justify-content:center;font-weight:bold}
+        .btn-primary{background:#6aa84f display: none;}
+        .btn-alt{background:#073763; display: none;}
+        .c-button:focus{outline:none;box-shadow:0 0 0 4px #cbd6ee}
+        .c-button:disabled{background:#555;cursor:not-allowed}
+        .game-embed-container iframe{width:100%;height:100%;border:none}
+    </style>
+</head>
+<body>
+    <div id="gameContainer" class="game-embed-container">
+        <div id="buttonWrapper" class="button-wrapper">
+            <div class="logo-text">CLASSROOM 6X</div>
+            <div class="button-grid">
+                <button id="playPrimaryInline" class="c-button btn-primary">PLAY HERE</button>
+                <button id="playPrimaryFullscreen" class="c-button btn-primary">FULLSCREEN</button>
+                <button id="playAltInline" class="c-button btn-alt">PLAY HERE (Alt)</button>
+                <button id="playAltFullscreen" class="c-button btn-alt">FULLSCREEN (Alt)</button>
+            </div>
+        </div>
+    </div>
+    <script>
+const gameContainer=document.getElementById("gameContainer"),buttonWrapper=document.getElementById("buttonWrapper"),googleScriptUrl="https://script.google.com/macros/s/AKfycbzzzBlqpi-UH1EolZkm_TwyvFbgdV6fuWz_IjtPNgQ8ZhiPtGODuz0NvWvNlMUVWoeS/exec",gameXmlUrl="data:@file/xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiID8+DQo8TW9kdWxlPg0KPE1vZHVsZVByZWZzIHRpdGxlPSJTYXZlIE15IFBldCIgLz4NCjxDb250ZW50IHR5cGU9Imh0bWwiPjwhW0NEQVRBWw0KDQo8IURPQ1RZUEUgaHRtbD4NCjxodG1sIGxhbmc9ImVuLXVzIj4NCiAgPGhlYWQ+DQogICAgPG1ldGEgY2hhcnNldD0idXRmLTgiPg0KICAgIDxtZXRhIGh0dHAtZXF1aXY9IkNvbnRlbnQtVHlwZSIgY29udGVudD0idGV4dC9odG1sOyBjaGFyc2V0PXV0Zi04Ij4NCiAgICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMCwgdXNlci1zY2FsYWJsZT1ubyI+DQogICAgPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvZ2gvbnVyaW1vb3Jlcy9EYXRhU291cmNlc0A5MWRiMjUzODQzYWFiNDVjNmQxYWEyMGFjNjdiYTY2YmU4OWE4ZThkL0V4YW1wbGVzL3N0eWxlLmNzcyI+DQogIDwvaGVhZD4NCiAgPGJvZHkgY2xhc3M9ImRhcmsiPg0KICAgIDxkaXYgaWQ9InVuaXR5LWNvbnRhaW5lciIgY2xhc3M9InVuaXR5LWRlc2t0b3AiPg0KICAgICAgPGNhbnZhcyBpZD0idW5pdHktY2FudmFzIj48L2NhbnZhcz4NCiAgICA8L2Rpdj4NCiAgICA8ZGl2IGlkPSJsb2FkaW5nLWNvdmVyIiBzdHlsZT0iZGlzcGxheTpub25lOyI+DQogICAgICA8ZGl2IGlkPSJ1bml0eS1sb2FkaW5nLWJhciI+DQogICAgICAgIDxkaXYgaWQ9InVuaXR5LWxvZ28iPjxpbWcgc3JjPSIiPjwvZGl2Pg0KICAgICAgICA8ZGl2IGlkPSJ1bml0eS1wcm9ncmVzcy1iYXItZW1wdHkiIHN0eWxlPSJkaXNwbGF5OiBub25lOyI+DQogICAgICAgICAgPGRpdiBpZD0idW5pdHktcHJvZ3Jlc3MtYmFyLWZ1bGwiPjwvZGl2Pg0KICAgICAgICA8L2Rpdj4NCiAgICAgICAgPGRpdiBjbGFzcz0ic3Bpbm5lciI+PC9kaXY+DQogICAgICA8L2Rpdj4NCiAgICA8L2Rpdj4NCiAgICA8ZGl2IGlkPSJ1bml0eS1mdWxsc2NyZWVuLWJ1dHRvbiIgc3R5bGU9ImRpc3BsYXk6IG5vbmU7Ij48L2Rpdj4NCiAgICA8c2NyaXB0Pg0KICAgICAgY29uc3QgaGlkZUZ1bGxTY3JlZW5CdXR0b24gPSAiMSI7DQogICAgICBjb25zdCBidWlsZFVybCA9ICJodHRwczovL2Nkbi5qc2RlbGl2ci5uZXQvZ2gvbnVyaW1vb3Jlcy9EYXRhU291cmNlc0AwMDk2MTMzNWY4ZTQ4OGZjMDRkMzYxMTkzYzk5MTQzZGViZTU0OTIxL1Rlc3RzIjsNCiAgICAgIGNvbnN0IGxvYWRlclVybCA9IGJ1aWxkVXJsICsgIi9zbXAubG9hZGVyLmpzIjsNCiAgICAgIGNvbnN0IGNvbmZpZyA9IHsNCiAgICAgICAgZGF0YVVybDogYnVpbGRVcmwgKyAiL3NtcC5kYXRhIiwNCiAgICAgICAgZnJhbWV3b3JrVXJsOiBidWlsZFVybCArICIvc21wLmZyYW1ld29yay5qcyIsDQogICAgICAgIGNvZGVVcmw6ICAiaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL251cmltb29yZXMvcGhwY3J1ZC1hcGlAY2I2MWZjZjgzNzI1MDI2ZmQxNTYzY2I0ZTVmMzYwMTE0ZTY1ZWNiOC9DYWNoZS9CYXNlL3NtcC53YXNtIiwNCiAgICAgICAgc3RyZWFtaW5nQXNzZXRzVXJsOiAiaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L2doL251cmltb29yZXMvRGF0YVNvdXJjZXNAMDA5NjEzMzVmOGU0ODhmYzA0ZDM2MTE5M2M5OTE0M2RlYmU1NDkyMS9UZXN0cy9TdHJlYW1pbmdBc3NldHMiLA0KICAgICAgfTsNCg0KICAgICAgY29uc3QgY29udGFpbmVyID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcigiI3VuaXR5LWNvbnRhaW5lciIpOw0KICAgICAgY29uc3QgY2FudmFzID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcigiI3VuaXR5LWNhbnZhcyIpOw0KICAgICAgY29uc3QgbG9hZGluZ0NvdmVyID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcigiI2xvYWRpbmctY292ZXIiKTsNCiAgICAgIGNvbnN0IHByb2dyZXNzQmFyRW1wdHkgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCIjdW5pdHktcHJvZ3Jlc3MtYmFyLWVtcHR5Iik7DQogICAgICBjb25zdCBwcm9ncmVzc0JhckZ1bGwgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCIjdW5pdHktcHJvZ3Jlc3MtYmFyLWZ1bGwiKTsNCiAgICAgIGNvbnN0IGZ1bGxzY3JlZW5CdXR0b24gPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCIjdW5pdHktZnVsbHNjcmVlbi1idXR0b24iKTsNCiAgICAgIGNvbnN0IHNwaW5uZXIgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKCcuc3Bpbm5lcicpOw0KDQogICAgICBjb25zdCBjYW5GdWxsc2NyZWVuID0gKGZ1bmN0aW9uKCkgew0KICAgICAgICBmb3IgKGNvbnN0IGtleSBvZiBbDQogICAgICAgICAgICAnZXhpdEZ1bGxzY3JlZW4nLA0KICAgICAgICAgICAgJ3dlYmtpdEV4aXRGdWxsc2NyZWVuJywNCiAgICAgICAgICAgICd3ZWJraXRDYW5jZWxGdWxsU2NyZWVuJywNCiAgICAgICAgICAgICdtb3pDYW5jZWxGdWxsU2NyZWVuJywNCiAgICAgICAgICAgICdtc0V4aXRGdWxsc2NyZWVuJywNCiAgICAgICAgICBdKSB7DQogICAgICAgICAgaWYgKGtleSBpbiBkb2N1bWVudCkgew0KICAgICAgICAgICAgcmV0dXJuIHRydWU7DQogICAgICAgICAgfQ0KICAgICAgICB9DQogICAgICAgIHJldHVybiBmYWxzZTsNCiAgICAgIH0oKSk7DQoNCiAgICAgIGlmICgvaVBob25lfGlQYWR8aVBvZHxBbmRyb2lkL2kudGVzdChuYXZpZ2F0b3IudXNlckFnZW50KSkgew0KICAgICAgICBjb250YWluZXIuY2xhc3NOYW1lID0gInVuaXR5LW1vYmlsZSI7DQogICAgICAgIGNvbmZpZy5kZXZpY2VQaXhlbFJhdGlvID0gMTsNCiAgICAgIH0NCiAgICAgIGxvYWRpbmdDb3Zlci5zdHlsZS5kaXNwbGF5ID0gIiI7DQoNCiAgICAgIGNvbnN0IHNjcmlwdCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoInNjcmlwdCIpOw0KICAgICAgc2NyaXB0LnNyYyA9IGxvYWRlclVybDsNCiAgICAgIHNjcmlwdC5vbmxvYWQgPSAoKSA9PiB7DQogICAgICAgIGNyZWF0ZVVuaXR5SW5zdGFuY2UoY2FudmFzLCBjb25maWcsIChwcm9ncmVzcykgPT4gew0KICAgICAgICAgIHNwaW5uZXIuc3R5bGUuZGlzcGxheSA9ICJub25lIjsNCiAgICAgICAgICBwcm9ncmVzc0JhckVtcHR5LnN0eWxlLmRpc3BsYXkgPSAiIjsNCiAgICAgICAgICBwcm9ncmVzc0JhckZ1bGwuc3R5bGUud2lkdGggPSBgJHsxMDAgKiBwcm9ncmVzc30lYDsNCiAgICAgICAgfSkudGhlbigodW5pdHlJbnN0YW5jZSkgPT4gew0KICAgICAgICAgIGxvYWRpbmdDb3Zlci5zdHlsZS5kaXNwbGF5ID0gIm5vbmUiOw0KICAgICAgICAgIGlmIChjYW5GdWxsc2NyZWVuKSB7DQogICAgICAgICAgICBpZiAoIWhpZGVGdWxsU2NyZWVuQnV0dG9uKSB7DQogICAgICAgICAgICAgIGZ1bGxzY3JlZW5CdXR0b24uc3R5bGUuZGlzcGxheSA9ICIiOw0KICAgICAgICAgICAgfQ0KICAgICAgICAgICAgZnVsbHNjcmVlbkJ1dHRvbi5vbmNsaWNrID0gKCkgPT4gew0KICAgICAgICAgICAgICB1bml0eUluc3RhbmNlLlNldEZ1bGxzY3JlZW4oMSk7DQogICAgICAgICAgICB9Ow0KICAgICAgICAgIH0NCiAgICAgICAgfSkuY2F0Y2goKG1lc3NhZ2UpID0+IHsNCiAgICAgICAgICBhbGVydChtZXNzYWdlKTsNCiAgICAgICAgfSk7DQogICAgICB9Ow0KICAgICAgICAgICBkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKHNjcmlwdCk7DQogICAgPC9zY3JpcHQ+DQoJPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9naC9zdDM5L3Nka0BtYWluL2FwaS5qcyI+PC9zY3JpcHQ+DQogIDwvYm9keT4NCjwvaHRtbD4NCg0KXV0+PC9Db250ZW50Pg0KPC9Nb2R1bGU+DQo=",faviconUrl="https://ssl.gstatic.com/classroom/favicon.png",pageTitle="classroom.google.com",playPrimaryInlineBtn=document.getElementById("playPrimaryInline"),playPrimaryFullscreenBtn=document.getElementById("playPrimaryFullscreen");playPrimaryInlineBtn.addEventListener("click",()=>{gameContainer.innerHTML="";const e=document.createElement("iframe");e.src=googleScriptUrl,gameContainer.appendChild(e)}),playPrimaryFullscreenBtn.addEventListener("click",()=>{const e=window.open("","_blank");e&&e.document.write(`<!DOCTYPE html><html><head><title>${pageTitle}</title><link rel="icon" href="${faviconUrl}"><style>body,html{margin:0;padding:0;height:100%;width:100%;overflow:hidden;}iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}</style></head><body><iframe src="${googleScriptUrl}" allowfullscreen></iframe></body></html>`)});const playAltInlineBtn=document.getElementById("playAltInline"),playAltFullscreenBtn=document.getElementById("playAltFullscreen");let readyHtmlContent=null;
+async function prepareGameContent() {
+    try {
+        const e = await fetch(gameXmlUrl);
+        if (!e.ok) throw new Error(`Failed to load XML: ${e.status} ${e.statusText}`);
+        const t = await e.text(),
+            n = new DOMParser,
+            o = n.parseFromString(t, "application/xml"),
+            r = o.querySelector("Content");
+        if (!r) throw new Error("<Content> not found in XML");
+        const a = r.textContent,
+            d = n.parseFromString(a, "text/html");
+        if (!d.head) {
+            const c = d.createElement("head");
+            d.documentElement.insertBefore(c, d.documentElement.firstChild)
+        }
+        let i = d.querySelector("title");
+        i || (i = d.createElement("title"), d.head.appendChild(i)), i.textContent = pageTitle;
+        const l = d.createElement("link");
+        l.rel = "icon", l.href = faviconUrl, d.head.appendChild(l);
+        const styleReset = d.createElement("style");
+        styleReset.textContent = "html,body,#container{margin:0;padding:0;width:100%!important;height:100%!important;overflow:hidden!important}", d.head.appendChild(styleReset);
+        let s;
+        s = "data:" === gameXmlUrl.substring(0, 5) ? window.location.href : gameXmlUrl.substring(0, gameXmlUrl.lastIndexOf("/") + 1);
+        const u = d.createElement("base");
+        u.href = s, d.head.prepend(u);
+        const p = JSON.stringify(window.location.hostname),
+            g = JSON.stringify(window.location.href);
+        const manualSiteUrl = "https://sites.google.com"; 
+        const refJson = JSON.stringify(manualSiteUrl);
+        const m = d.createElement("script");
+        var scriptLines = [];
+        scriptLines.push("(function(){");
+        scriptLines.push("  const injectedHref = " + g + ";"); 
+        scriptLines.push("  const siteUrl = " + refJson + ";");
+        scriptLines.push("  const injectedDomain = " + p + ";");
+        scriptLines.push("  const BASE_FOR_REL = " + JSON.stringify(s) + ";");       
+        scriptLines.push("  function hookIMA() {");
+        scriptLines.push("    let _google = window.google;");
+        scriptLines.push("    Object.defineProperty(window, 'google', {");
+        scriptLines.push("      configurable: true, enumerable: true,");
+        scriptLines.push("      get: function() { return _google; },");
+        scriptLines.push("      set: function(v) {");
+        scriptLines.push("        _google = v;");
+        scriptLines.push("        if (v && v.ima) {");
+        scriptLines.push("           if (v.ima.settings && v.ima.settings.setPageUrl) {");
+        scriptLines.push("               v.ima.settings.setPageUrl(siteUrl);");
+        scriptLines.push("           }");
+        scriptLines.push("           if (v.ima.AdsRequest && !v.ima.AdsRequest.__patched) {");
+        scriptLines.push("             const OriginalAdsRequest = v.ima.AdsRequest;");
+        scriptLines.push("             v.ima.AdsRequest = function() {");
+        scriptLines.push("               const req = new OriginalAdsRequest();");
+        scriptLines.push("               req.descriptionUrl = siteUrl;"); 
+        scriptLines.push("               req.contentUrl = siteUrl;");
+        scriptLines.push("               req.url = siteUrl;");
+        scriptLines.push("               req.pageUrl = siteUrl;");
+        scriptLines.push("               return req;");
+        scriptLines.push("             };");
+        scriptLines.push("             v.ima.AdsRequest.prototype = OriginalAdsRequest.prototype;");
+        scriptLines.push("             v.ima.AdsRequest.__patched = true;");
+        scriptLines.push("           }");
+        scriptLines.push("        }");
+        scriptLines.push("      }");
+        scriptLines.push("    });");
+        scriptLines.push("  }");       
+        scriptLines.push("  hookIMA();");     
+        scriptLines.push("  setInterval(function() {");
+        scriptLines.push("    if (window.google && window.google.ima) {");
+        scriptLines.push("       if (window.google.ima.settings && window.google.ima.settings.setPageUrl) { window.google.ima.settings.setPageUrl(siteUrl); }");
+        scriptLines.push("       if (window.google.ima.AdsRequest && !window.google.ima.AdsRequest.__patched) {");
+        scriptLines.push("         const OriginalAdsRequest = window.google.ima.AdsRequest;");
+        scriptLines.push("         window.google.ima.AdsRequest = function() {");
+        scriptLines.push("            const req = new OriginalAdsRequest();");
+        scriptLines.push("            req.descriptionUrl = siteUrl;");
+        scriptLines.push("            req.contentUrl = siteUrl;");
+        scriptLines.push("            req.url = siteUrl;");
+        scriptLines.push("            return req;");
+        scriptLines.push("         };");
+        scriptLines.push("         window.google.ima.AdsRequest.prototype = OriginalAdsRequest.prototype;");
+        scriptLines.push("         window.google.ima.AdsRequest.__patched = true;");
+        scriptLines.push("       }");
+        scriptLines.push("    }");
+        scriptLines.push("  }, 50);");
+        scriptLines.push("  const AD_HOSTS = ['gamemonetize.com', 'gamedistribution.com'];");
+        scriptLines.push("  function isAdHost(url){ try { return AD_HOSTS.some(h => url.includes(h)); } catch(e){ return false; } }");
+        scriptLines.push("  function absolutize(url){ try{ new URL(url); return url; }catch(e){ try { return new URL(url, BASE_FOR_REL).href; } catch(e2){ return url; } } }");
+        scriptLines.push("  function patchDomainParamToUrl(u){ try{ if(!(u instanceof URL)) u=new URL(u,location.href); const cur=u.searchParams.get('domain'); if(!cur||cur.trim()===''||cur.toLowerCase().startsWith('blob')){ u.searchParams.set('domain', injectedDomain); } return u.toString(); }catch(e){ return u.toString?u.toString():u; } }");
+        scriptLines.push("  const _fetch=window.fetch; window.fetch=function(i,n){ try{ let u=null; if(typeof i==='string')u=i; else if(i instanceof Request)u=i.url; if(u){ try{ new URL(u);}catch(e){u=absolutize(u);} if(isAdHost(u)){ const p=patchDomainParamToUrl(new URL(u,location.href)); i=(typeof i==='string')?p:new Request(p,i); } } }catch(e){} return _fetch.call(this,i,n); };");
+        scriptLines.push("  try{ const _o=XMLHttpRequest.prototype.open; XMLHttpRequest.prototype.open=function(m,u,a,s,p){ try{ let f=u; try{ new URL(f);}catch(e){ f=absolutize(f);} if(isAdHost(f)) f=patchDomainParamToUrl(new URL(f,location.href)); return _o.call(this,m,f,a!==false,s,p); }catch(e){ return _o.apply(this,arguments);} }; }catch(e){}");   
+        scriptLines.push("  try{ Object.defineProperty(document,'referrer',{ get:function(){ return siteUrl; }, configurable:true }); }catch(e){}");
+        scriptLines.push("  const swfBlobCache=new Map();");
+        scriptLines.push("  async function fetchArrayBuffer(url){ const r=await fetch(url); if(!r.ok) throw new Error('fetch failed'); return await r.arrayBuffer(); }");
+        scriptLines.push("  async function swfToBlobUrl(url){ if(swfBlobCache.has(url)) return swfBlobCache.get(url); try{ const ab=await fetchArrayBuffer(url); const b=URL.createObjectURL(new Blob([ab],{type:'application/x-shockwave-flash'})); swfBlobCache.set(url,b); return b; }catch(e){ return url; } }");
+        scriptLines.push("  function tryConvertExistingSwfElements(){ try{ const objs=document.getElementsByTagName('object'); for(let o of objs){ const data=o.getAttribute('data')||''; if(data.toLowerCase().endsWith('.swf')){ (async function(el,src){ const abs=absolutize(src); const b=await swfToBlobUrl(abs); el.setAttribute('data',b); for(let p of el.getElementsByTagName('param')){ if((p.getAttribute('name')||'').toLowerCase()==='movie') p.setAttribute('value',b); } })(o,data); } } const embeds=document.getElementsByTagName('embed'); for(let e of embeds){ const src=e.getAttribute('src')||e.src||''; if(src.toLowerCase().endsWith('.swf')){ (async function(el,s){ const abs=absolutize(s); const b=await swfToBlobUrl(abs); el.setAttribute('src',b); })(e,src); } } }catch(e){} }");
+        scriptLines.push("  setTimeout(tryConvertExistingSwfElements,10);");
+        scriptLines.push("})();");
+        m.textContent = scriptLines.join('\n');
+        d.head.prepend(m), readyHtmlContent = d.documentElement.outerHTML
+    } catch (err) {
+        gameContainer.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`, playAltInlineBtn.disabled = !0, playAltFullscreenBtn.disabled = !0
+    }
+}
+        prepareGameContent().then(() => {
+            // Hide button UI so no other option can be selected
+            buttonWrapper.style.display = "none";
+
+            // Automatically launch the Alt game once ready
+            const waitForContent = setInterval(() => {
+                if (readyHtmlContent) {
+                    clearInterval(waitForContent);
+                    launchAltGame(true); // Auto-run Alt inline mode
+                }
+            }, 50);
+        });
+function launchAltGame(isInline){if(!readyHtmlContent)return alert("Game is not ready yet. Please wait.");const e=new Blob([readyHtmlContent],{type:"text/html"}),t=URL.createObjectURL(e);if(isInline){gameContainer.innerHTML="";const n=document.createElement("iframe");n.src=t,n.allow="fullscreen; autoplay; encrypted-media",n.style.width="100%",n.style.height="100%",gameContainer.appendChild(n)}else{const o=window.open(t,"_blank");o||alert("Please allow popups for this site.")}}playAltInlineBtn.addEventListener("click",()=>launchAltGame(!0)),playAltFullscreenBtn.addEventListener("click",()=>launchAltGame(!1));
+    </script>
+</body>
+</html>
