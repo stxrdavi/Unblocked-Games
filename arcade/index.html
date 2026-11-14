@@ -109,6 +109,10 @@
 const titleOrder = new Intl.Collator('it', {numeric:true, sensitivity:'base'});
 const games = JSON.parse(document.getElementById('game-data').textContent);
 const byId = new Map(games.map(game => [game.id, game]));
+const compatibilityGames = new Set([
+  'speed-stars', 'monster-tracks', 'johnny-trigger', 'hill-climb-racing-lite', 'spiral-roll', 'bowmasters'
+]);
+const gameOrigin = 'https://www.calcolatrice.website.';
 const get = id => document.getElementById(id);
 const search = get('search');
 const favoritesButton = get('favorites');
@@ -498,7 +502,13 @@ async function showGame(game) {
     setGameLoading('Impossibile aprire il gioco.', true, true);
   }, {once:true});
   frame.sandbox = 'allow-scripts allow-pointer-lock';
-  if (game.compressed) {
+  if (compatibilityGames.has(game.id) && location.origin === 'https://www.calcolatrice.website') {
+    // The alternate host serves the same files with a separate browser origin.
+    const url = new URL(game.compressed ? 'games/launch.html' : game.url, gameOrigin+'/arcade/');
+    if (game.compressed) url.searchParams.set('game', game.id);
+    frame.sandbox.add('allow-same-origin');
+    frame.src = url.href;
+  } else if (game.compressed) {
     try {
       gameDownload = new AbortController();
       const response = await fetch(game.url + '.gz',{signal:gameDownload.signal});

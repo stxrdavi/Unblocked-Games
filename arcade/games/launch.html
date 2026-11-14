@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caricamento gioco</title>
+<style>
+  body { margin: 0; display: grid; place-items: center; min-height: 100vh; background: #171122; color: white; font: 16px system-ui; }
+</style>
+</head>
+<body>
+<p id="status" role="status">Scaricamento del gioco…</p>
+<script>
+'use strict';
+const game = new URLSearchParams(location.search).get('game');
+const status = document.getElementById('status');
+
+async function launch() {
+  if (location.origin !== 'https://www.calcolatrice.website.' || !['speed-stars', 'bowmasters'].includes(game)) {
+    throw new Error('Gioco non disponibile');
+  }
+  const url = new URL(game+'/index.html', location.href);
+  const response = await fetch(url.href+'.gz');
+  if (!response.ok || !response.body) throw new Error('Scaricamento non riuscito');
+  const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
+  const source = await new Response(stream).text();
+  const html = source.replace(/^(\s*<!doctype[^>]*>)?/i, '$&<base href="'+url.href+'">');
+  document.open();
+  document.write(html);
+  document.close();
+}
+
+launch().catch(() => {
+  status.textContent = 'Impossibile caricare il gioco.';
+  const retry = document.createElement('button');
+  retry.textContent = 'Riprova';
+  retry.onclick = () => location.reload();
+  status.after(retry);
+});
+</script>
+</body>
+</html>
