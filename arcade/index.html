@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=search-menu">
+<link rel="stylesheet" href="assets/arcade.css?v=welcome">
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -149,6 +149,15 @@
     <p id="admin-status" role="status"></p>
   </form>
 </dialog>
+<dialog id="account-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
+  <h2 id="welcome-title">Benvenuto su Arcade</h2>
+  <p id="welcome-description">Crea un account per salvare i tuoi progressi sul profilo, aggiungere amici e scambiare DM con loro.</p>
+  <p>Bastano uno username e una password, senza email.</p>
+  <div class="welcome-actions">
+    <button class="secondary" type="button" id="welcome-create" autofocus>Crea account</button>
+    <button class="secondary" type="button" id="account-guest">Continua come ospite</button>
+  </div>
+</dialog>
 <dialog id="account-dialog" aria-labelledby="account-title">
   <form id="account-form">
     <div class="auth-heading">
@@ -173,7 +182,6 @@
     </div>
     <p id="account-status" role="status" hidden></p>
     <div class="account-actions">
-      <button class="secondary" type="button" id="account-guest" hidden>Continua come ospite</button>
       <button class="secondary" type="submit" id="account-submit">Accedi</button>
     </div>
   </form>
@@ -212,6 +220,7 @@ const search = get('search');
 const favoritesButton = get('favorites');
 const accountForm = get('account-form');
 const accountDialog = get('account-dialog');
+const accountWelcome = get('account-welcome');
 const accountButton = get('account-button');
 const serverMode = true;
 const authBase = 'https://usrvjyffaoucyahkpyjw.supabase.co';
@@ -293,6 +302,7 @@ function setSession(session) {
   } else {
     if (get('profile-dialog').open) get('profile-dialog').close();
     if (session && accountDialog.open) accountDialog.close();
+    if (session && accountWelcome.open) accountWelcome.close();
     profileSession = session;
   }
   accountView();
@@ -431,10 +441,15 @@ get('account-close').addEventListener('click', () => accountDialog.close());
 get('account-login-mode').addEventListener('click', () => setAccountMode(false));
 get('account-switch').addEventListener('click', () => setAccountMode(true));
 get('account-reveal').addEventListener('click', () => showPassword(get('account-password').type === 'password'));
-get('account-guest').addEventListener('click', () => accountDialog.close());
+get('account-guest').addEventListener('click', () => accountWelcome.close());
+get('welcome-create').addEventListener('click', () => {
+  accountWelcome.close();
+  setAccountMode(true);
+  accountDialog.showModal();
+  get('account-username').focus();
+});
 accountDialog.addEventListener('close', () => {
   if (accountDialog.open) return;
-  get('account-guest').hidden = true;
   accountForm.reset();
   showPassword(false);
 });
@@ -759,9 +774,7 @@ window.addEventListener('pageshow', event => {
 render();
 route();
 if (serverMode && !profileSession) {
-  setAccountMode(true);
-  get('account-guest').hidden = false;
-  accountDialog.showModal();
+  accountWelcome.showModal();
 }
 </script>
 <script src="assets/profile.js?v=5"></script>

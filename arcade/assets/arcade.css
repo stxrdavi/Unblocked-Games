@@ -147,15 +147,20 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 .header-actions { justify-self:end; display:flex; gap:10px; min-width:0; }
 #account-button { max-width: 145px; overflow: hidden; text-overflow: ellipsis; }
-#account-dialog { width: min(440px, calc(100% - 28px)); border: 1px solid var(--line); border-radius: 18px; padding: 22px; background: var(--paper); color: var(--ink); }
-#account-dialog::backdrop { background: #100b1ac9; }
+#account-dialog, #account-welcome { width: min(440px, calc(100% - 28px)); border: 1px solid var(--line); border-radius: 18px; background: var(--paper); color: var(--ink); }
+#account-dialog::backdrop, #account-welcome::backdrop { background: #100b1ac9; }
+#welcome-title { margin:0 0 12px; font:700 28px/1.1 var(--display); }
+#account-welcome p { margin:0 0 12px; color:var(--muted); }
+.welcome-actions { display:grid; gap:10px; margin-top:22px; }
+#welcome-create { background:var(--violet); color:#211239; border-color:transparent; }
+#welcome-create:hover { background:#d1baff; color:#211239; }
 #account-title { margin: 0; font: 700 27px/1.1 var(--display); }
 #account-mode, #account-status { color: var(--muted); }
 #account-fields { display: grid; gap: 12px; }
 #account-fields label { display: grid; gap: 4px; font-weight: 650; }
 #account-fields input { padding: 8px 10px; width: 100%; background: var(--canvas); border: 1px solid var(--line); border-radius: 8px; }
 .account-actions { display: flex; flex-wrap: wrap; justify-content: end; gap: 7px; }
-#account-dialog { padding: clamp(20px, 5vw, 30px); max-height: 90dvh; box-shadow: 0 24px 88px #0009; }
+#account-dialog, #account-welcome { padding: clamp(20px, 5vw, 30px); max-height: 90dvh; box-shadow: 0 24px 88px #0009; }
 .auth-heading { display:flex; align-items:start; justify-content:space-between; gap:12px; }
 .auth-close { width:36px; height:36px; padding:0; font-size:22px; line-height:1; }
 #account-mode { margin:8px 0 18px; font-size:14px; }
