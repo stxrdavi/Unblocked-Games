@@ -45,6 +45,28 @@
     <p class="player-note" id="player-note" aria-live="polite" hidden></p>
   </section>
 </main>
+<dialog id="profile-dialog" aria-labelledby="profile-name">
+  <div class="profile-heading">
+    <img id="profile-avatar" alt="" hidden>
+    <div><h2 id="profile-name"></h2><p id="profile-bio"></p></div>
+    <button class="secondary" id="profile-close">Chiudi</button>
+  </div>
+  <dl class="profile-stats">
+    <div><dt>Tempo di gioco</dt><dd id="profile-time">—</dd></div>
+    <div><dt>Gioco più giocato</dt><dd id="profile-favorite">—</dd></div>
+  </dl>
+  <p id="profile-status" role="status"></p>
+  <button class="secondary" id="profile-edit">Modifica</button>
+  <button class="secondary" id="profile-logout">Esci</button>
+  <form id="profile-form" hidden>
+    <label>Nome del profilo <input name="name" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_.\-]{3,24}"></label>
+    <small id="profile-rename"></small>
+    <label>Descrizione <textarea name="bio" maxlength="300" rows="3"></textarea></label>
+    <label>Foto profilo <input name="photo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+    <label><input name="removePhoto" type="checkbox"> Rimuovi la foto</label>
+    <div><button class="secondary" type="submit">Salva</button> <button class="secondary" type="button" id="profile-cancel">Annulla</button></div>
+  </form>
+</dialog>
 <dialog id="account-dialog">
   <form id="account-form">
     <h2 id="account-title">Account Arcade</h2>
@@ -74,6 +96,7 @@ const accountDialog = get('account-dialog');
 const accountButton = get('account-button');
 const serverMode = true;
 let username = null;
+let profileSession = null;
 let register = false;
 let playerRequest = 0;
 
@@ -102,6 +125,10 @@ function accountView() {
 }
 
 accountButton.addEventListener('click', () => {
+  if (profileSession) {
+    window.dispatchEvent(new Event('arcade-profile-open'));
+    return;
+  }
   register = false;
   get('account-status').textContent = '';
   accountView();
@@ -123,6 +150,7 @@ accountForm.addEventListener('submit', async event => {
       password:accountForm.elements.password.value
     });
     username = result.username;
+    profileSession = result.access_token ? result : null;
     accountForm.reset();
     accountView();
     accountDialog.close();
@@ -319,5 +347,6 @@ window.addEventListener('hashchange', route);
 render();
 route();
 </script>
+<script src="assets/profile.js"></script>
 </body>
 </html>

@@ -135,3 +135,17 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
   .header-actions .saved { padding-inline: 8px; }
   #account-button { max-width: 88px; }
 }
+.profile-heading { display:flex; align-items:center; flex-wrap:wrap; gap:16px; }
+.profile-heading > div { flex:1; min-width:120px; overflow-wrap:anywhere; }
+#profile-dialog { width:min(670px,calc(100% - 28px)); max-height:90dvh; border:1px solid var(--line); border-radius:20px; padding:clamp(16px,4vw,30px); background:var(--paper); color:var(--ink); }
+#profile-dialog::backdrop { background:#100b1ad9; }
+#profile-avatar { width:80px; height:80px; object-fit:cover; border-radius:22px; }
+#profile-name { margin:0; font:700 clamp(24px,5vw,40px)/1.1 var(--display); }
+#profile-bio { margin:6px 0 0; white-space:pre-wrap; color:var(--muted); }
+.profile-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.profile-stats div { padding:14px; background:var(--canvas); border:1px solid var(--line); border-radius:12px; }
+.profile-stats dt { color:var(--muted); font-size:12px; }
+.profile-stats dd { margin:4px 0 0; font-weight:750; overflow-wrap:anywhere; }
+#profile-form { display:grid; gap:12px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+#profile-form label { display:block; }
+#profile-form input:not([type=checkbox]), #profile-form textarea { display:block; width:100%; margin-top:4px; padding:8px; border:1px solid var(--line); border-radius:7px; background:var(--canvas); color:inherit; font:inherit; }
