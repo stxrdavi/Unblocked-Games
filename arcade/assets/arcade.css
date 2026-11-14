@@ -243,6 +243,11 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 #profile-form label { display:block; }
 #profile-form input:not([type=checkbox]), #profile-form textarea { display:block; width:100%; margin-top:4px; padding:8px; border:1px solid var(--line); border-radius:7px; background:var(--canvas); color:inherit; font:inherit; }
 @media (max-width: 460px) {
+  .profile-heading { padding:24px var(--profile-space) var(--profile-space); }
+  .profile-identity > p:first-child { padding-right:44px; }
   .profile-stats { grid-template-columns:1fr; }
   .profile-stats div { min-height:66px; }
+}
+@media (max-width: 350px) {
+  .profile-actions > button { width:100%; }
 }
