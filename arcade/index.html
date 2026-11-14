@@ -7,12 +7,26 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=player-favorite">
+<link rel="stylesheet" href="assets/arcade.css?v=search-menu">
 </head>
 <body>
 <header class="top"><div class="shell">
   <a class="brand" href="#" aria-label="Arcade, home">Arcade<span aria-hidden="true">.</span></a>
+  <div class="search-wrap" id="search-wrap">
   <label class="top-search"><span class="icon-search" aria-hidden="true"></span><input id="search" type="search" aria-label="Cerca giochi o profili" placeholder="Cerca giochi o profili…" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
+    <div id="search-menu" class="search-menu" hidden>
+      <section aria-labelledby="game-results-title">
+        <h2 id="game-results-title">Giochi</h2>
+        <p id="game-search-status" role="status" hidden></p>
+        <div id="game-matches"></div>
+      </section>
+      <section id="profile-results" aria-labelledby="profile-results-title" hidden>
+        <h2 id="profile-results-title">Profili</h2>
+        <p id="profile-search-status" role="status"></p>
+        <div id="profile-matches"></div>
+      </section>
+    </div>
+  </div>
   <div class="header-actions">
     <button class="saved" type="button" id="favorites" aria-pressed="false">☆ Preferiti</button>
     <button class="saved" type="button" id="account-button">Accedi</button>
@@ -32,11 +46,6 @@
       <div id="friend-strip"></div>
       <p id="friends-status" role="status"></p>
       <div id="friend-requests" hidden></div>
-    </section>
-    <section id="profile-results" aria-labelledby="profile-results-title" hidden>
-      <h2 id="profile-results-title">Profili</h2>
-      <p id="profile-search-status" role="status"></p>
-      <div id="profile-matches"></div>
     </section>
     <section id="catalogo" aria-labelledby="catalog-title">
       <div class="catalog-head"><h2 id="catalog-title" tabindex="-1">Tutti i giochi</h2><p id="count" class="count" aria-live="polite"></p></div>
@@ -556,18 +565,16 @@ function makeCard(game) {
 }
 
 function render() {
-  const query = normalize(search.value.trim());
   const matches = games.filter(game =>
     (!onlyFavorites || favorites.has(game.id)) &&
-    (activeFilter === 'Tutti' || activeFilter === game.category) &&
-    normalize(game.title).includes(query)
+    (activeFilter === 'Tutti' || activeFilter === game.category)
   ).sort((a, b) => titleOrder.compare(a.title, b.title));
   get('games').replaceChildren(...matches.map(makeCard));
   get('count').textContent = matches.length + (matches.length === 1 ? ' gioco' : ' giochi');
   get('catalog-title').textContent = onlyFavorites ? 'Preferiti' : 'Tutti i giochi';
-  get('hero').hidden = Boolean(query || onlyFavorites);
+  get('hero').hidden = onlyFavorites;
   get('empty').hidden = matches.length !== 0;
-  get('empty').textContent = onlyFavorites && !query ? 'Usa la stella sulle schede per aggiungere un gioco ai preferiti.' : games.length ? 'Nessun gioco trovato.' : 'Il catalogo è ancora vuoto.';
+  get('empty').textContent = onlyFavorites ? 'Usa la stella sulle schede per aggiungere un gioco ai preferiti.' : games.length ? 'Nessun gioco trovato.' : 'Il catalogo è ancora vuoto.';
 }
 
 for (const category of categories) {
@@ -694,10 +701,6 @@ function route() {
   }
 }
 
-search.addEventListener('input', () => {
-  if (!get('player').hidden) location.hash = '#catalogo';
-  render();
-});
 favoritesButton.addEventListener('click', () => {
   if (!get('player').hidden) location.hash = '#catalogo';
   onlyFavorites = !onlyFavorites;
@@ -741,6 +744,7 @@ route();
 </script>
 <script src="assets/profile.js?v=5"></script>
 <script src="assets/profile-search.js?v=3"></script>
+<script src="assets/game-search.js?v=1"></script>
 <script src="assets/friends.js?v=3"></script>
 <script src="assets/dm.js?v=3"></script>
 <script src="assets/moderation.js?v=1"></script>

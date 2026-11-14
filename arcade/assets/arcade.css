@@ -41,6 +41,14 @@ main { padding-bottom: 96px; }
 .top-search:focus-within { border-color: var(--violet); box-shadow: 0 0 0 2px #b99aff25; }
 .top-search input { min-width: 0; width: 100%; padding: 3px 0; border: 0; background: transparent; outline: none; }
 .top-search input::placeholder { color: var(--muted); }
+.search-wrap { position:relative; min-width:0; z-index:12; }
+.search-menu { position:absolute; inset:calc(100% + 8px) 0 auto; max-height:min(60dvh,460px); overflow:auto; overscroll-behavior:contain; padding:10px; border:1px solid var(--line); border-radius:14px; background:var(--paper); box-shadow:0 12px 30px #0009; }
+.search-menu h2 { margin:4px 6px 8px; color:var(--muted); font-size:13px; }
+.search-menu p { margin:6px; color:var(--muted); font-size:13px; }
+.search-game { display:flex; align-items:center; gap:12px; min-height:44px; padding:6px; border-radius:9px; text-decoration:none; font-weight:700; overflow-wrap:anywhere; }
+.search-game:hover, .search-game:focus-visible { background:var(--surface); }
+.search-game:focus-visible { outline-offset:-2px; }
+.search-game img { flex:none; width:48px; aspect-ratio:4/3; object-fit:cover; border-radius:7px; }
 .icon-search { position: relative; flex: 0 0 14px; height: 14px; margin-right: 3px; border: 1.7px solid var(--muted); border-radius: 50%; }
 .icon-search::after { content: ""; position: absolute; top: 11px; left: 10px; width: 6px; height: 1.7px; transform: rotate(45deg); background: var(--muted); }
 kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); color: var(--muted); }
@@ -121,7 +129,7 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 }
 @media (max-width: 680px) {
   .top .shell { grid-template-columns:minmax(0,1fr) auto; gap:12px; padding:12px 0; }
-  .top-search { grid-column:1/-1; grid-row:2; }
+  .search-wrap { grid-column:1/-1; grid-row:2; }
   .top-search kbd { display:none; }
 }
 @media (max-width: 590px) {
@@ -168,9 +176,7 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
   .header-actions .saved { padding-inline: 8px; }
   #account-button { max-width: 88px; }
 }
-#profile-results { margin: 20px 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
-#profile-results h2 { margin: 0 0 8px; font: 700 20px var(--display); }
-#profile-search-status { margin: 0; color: var(--muted); }
+#profile-results { margin-top:10px; padding-top:8px; border-top:1px solid var(--line); }
 #profile-matches { display: flex; flex-wrap: wrap; gap: 8px; }
 .owner-tag { display:inline-block; vertical-align:middle; border-radius:7px; padding:3px 7px; background:var(--acid); color:#26320e; font:700 12px var(--display); }
 #dm-dialog {
