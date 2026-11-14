@@ -7,11 +7,17 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=chat-avatars">
+<link rel="stylesheet" href="assets/arcade.css?v=online-counts">
 </head>
 <body>
 <header class="top"><div class="shell">
-  <a class="brand" href="#" aria-label="Arcade, home">Arcade<span aria-hidden="true">.</span></a>
+  <div class="brand-group">
+    <a class="brand" href="#" aria-label="Arcade, home">Arcade<span aria-hidden="true">.</span></a>
+    <div class="site-presence" id="site-presence" aria-label="Attività su Arcade" hidden>
+      <span><b id="online-count"></b> online</span>
+      <span><b id="playing-count"></b> in gioco</span>
+    </div>
+  </div>
   <div class="search-wrap" id="search-wrap">
   <label class="top-search"><span class="icon-search" aria-hidden="true"></span><input id="search" type="search" aria-label="Cerca giochi o profili" placeholder="Cerca giochi o profili…" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
     <div id="search-menu" class="search-menu" hidden>
@@ -844,5 +850,6 @@ if (serverMode && !profileSession) {
 <script src="assets/dm.js?v=4"></script>
 <script src="assets/global-chat.js?v=2"></script>
 <script src="assets/moderation.js?v=1"></script>
+<script src="assets/online-counts.js?v=1"></script>
 </body>
 </html>
