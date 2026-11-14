@@ -81,7 +81,6 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 .grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:18px; }
 .card { position: relative; min-width: 0; border: 1px solid var(--line); border-radius: 15px; background: var(--paper); box-shadow: 0 2px 2px #0003; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
 .card:hover, .card:focus-within { border-color: #b49ae9; box-shadow: 0 10px 22px #0006; }
-.card:hover { transform: translateY(-3px); }
 .game-link { display:block; height:100%; padding:7px; border-radius:inherit; text-decoration:none; }
 .game-link:focus-visible { outline-offset: 1px; }
 .cover { position: relative; display: grid; place-items: center; aspect-ratio: 16/9; isolation: isolate; overflow: hidden; border-radius: 10px; color: #fff; background: radial-gradient(ellipse at top,var(--hue),#251c42); }
@@ -144,7 +143,6 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
   .player-cover { width:46px; height:34px; }
   .player-actions > button { flex:1 1 auto; }
 }
-@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 .header-actions { justify-self:end; display:flex; gap:10px; min-width:0; }
 #account-button { max-width: 145px; overflow: hidden; text-overflow: ellipsis; }
 #account-dialog, #account-welcome { width: min(440px, calc(100% - 28px)); border: 1px solid var(--line); border-radius: 18px; background: var(--paper); color: var(--ink); }
@@ -329,4 +327,33 @@ html:has(:fullscreen) :is(#dm-launcher, #dm-dialog) { display:none; }
 }
 @media (max-width: 350px) {
   .profile-actions > button { width:100%; }
+}
+
+@keyframes arcade-appear {
+  from { opacity:0; transform:translateY(8px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes arcade-fade {
+  from { opacity:0; }
+  to { opacity:1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-text { animation:arcade-appear 280ms ease-out both; }
+  .hero-art { animation:arcade-fade 380ms ease-out both; }
+  .player:not([hidden]) .player-head,
+  .search-menu:not([hidden]),
+  dialog[open] { animation:arcade-appear 180ms ease-out both; }
+  dialog::backdrop { animation:arcade-fade 180ms ease-out both; }
+  .saved, .secondary, .filter, .primary, .star, .hero-game, #dm-launcher {
+    transition:background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+  .cover img { transition:transform 240ms ease-out; }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .card:hover { transform:translateY(-3px); }
+  .card:hover .cover img { transform:scale(1.045); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { transition:none; }
 }
