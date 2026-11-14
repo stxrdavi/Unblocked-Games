@@ -22,9 +22,9 @@
   <div id="home">
     <section class="hero" id="hero">
       <div class="hero-text"><h1>Scegli.<br><em>Gioca.</em></h1><p id="hero-summary"></p><a href="#catalogo" class="primary">Esplora il catalogo <span aria-hidden="true">↓</span></a></div>
-      <div class="hero-art">
-        <img class="hero-image" src="assets/covers/plants-vs-zombies.webp" alt="">
-        <a class="hero-game" href="#gioco/plants-vs-zombies"><span>Plants vs. Zombies</span><span aria-hidden="true">↗</span></a>
+      <div class="hero-art" id="hero-art" hidden>
+        <img class="hero-image" id="hero-image" alt="">
+        <a class="hero-game" id="hero-game"><span id="hero-game-title"></span><span aria-hidden="true">↗</span></a>
       </div>
     </section>
     <section id="catalogo" aria-labelledby="catalog-title">
@@ -120,6 +120,28 @@ const compatibilityGames = new Set([
 ]);
 const gameOrigin = 'https://www.calcolatrice.website.';
 const get = id => document.getElementById(id);
+const featuredGames = games.filter(game => game.cover);
+const featuredKey = 'arcade-featured-game';
+let featuredId;
+
+function featureRandomGame() {
+  let previous = featuredId;
+  if (!previous) {
+    try { previous = localStorage.getItem(featuredKey); } catch {}
+  }
+  const choices = featuredGames.length > 1
+    ? featuredGames.filter(game => game.id !== previous)
+    : featuredGames;
+  const game = choices[Math.floor(Math.random() * choices.length)];
+  if (!game) return;
+
+  featuredId = game.id;
+  try { localStorage.setItem(featuredKey, featuredId); } catch {}
+  get('hero-image').src = game.cover;
+  get('hero-game').href = '#gioco/' + game.id;
+  get('hero-game-title').textContent = game.title;
+  get('hero-art').hidden = false;
+}
 const search = get('search');
 const favoritesButton = get('favorites');
 const accountForm = get('account-form');
@@ -464,6 +486,7 @@ for (const category of categories) {
 }
 
 function showHome() {
+  if (!featuredId || get('home').hidden || !location.hash) featureRandomGame();
   playerRequest++;
   get('player').hidden = true;
   clearGameFrame();
@@ -573,12 +596,16 @@ get('fullscreen').addEventListener('click', async () => {
     note.hidden = false;
   }
 });
-document.querySelector('.brand').addEventListener('click', () => {
+document.querySelector('.brand').addEventListener('click', event => {
   search.value = '';
   onlyFavorites = false;
   favoritesButton.setAttribute('aria-pressed', 'false');
   get('filters').firstElementChild.click();
   window.scrollTo(0,0);
+  if (!location.hash) {
+    event.preventDefault();
+    featureRandomGame();
+  }
 });
 document.addEventListener('keydown', event => {
   if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey && !event.target.closest('input, textarea, [contenteditable]')) {
@@ -587,6 +614,9 @@ document.addEventListener('keydown', event => {
   }
 });
 window.addEventListener('hashchange', route);
+window.addEventListener('pageshow', event => {
+  if (event.persisted && !get('home').hidden) featureRandomGame();
+});
 render();
 route();
 </script>
