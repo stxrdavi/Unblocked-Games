@@ -4,10 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Caricamento gioco</title>
-<script src="../assets/game-audio.js"></script>
-<script src="../assets/minecraft-relay.js?v=1"></script>
-<script src="../assets/save-bridge.js?v=1"></script>
-<script src="../assets/game-saves.js?v=1"></script>
 <style>
   body { margin: 0; display: grid; place-items: center; min-height: 100vh; background: #171122; color: white; font: 16px system-ui; }
 </style>
@@ -22,22 +18,50 @@ const playerOrigin = location.hostname === 'www.calcolatrice.website.'
   ? 'https://www.calcolatrice.website' : location.origin;
 const status = document.getElementById('status');
 
+function loadScript(path) {
+  return new Promise(resolve => {
+    const script = document.createElement('script');
+    script.src = path;
+    script.onload = script.onerror = resolve;
+    document.head.append(script);
+  });
+}
+
+async function prepareGame() {
+  if (game === 'eaglecraft-26-3') {
+    await loadScript('../assets/minecraft-relay.js?v=1');
+    try { window.configureArcadeMinecraftRelay(); } catch {}
+  }
+  if (params.get('sync') === '1') {
+    await Promise.all([
+      loadScript('../assets/save-bridge.js?v=1'),
+      loadScript('../assets/game-saves.js?v=1')
+    ]);
+    try {
+      if (Object.hasOwn(arcadeSaveKeys, game)) {
+        await window.prepareArcadeSaves(game, arcadeSaveKeys[game], playerOrigin);
+      }
+    } catch {}
+  }
+}
+
+async function readGame(url, plain) {
+  const response = await fetch(url.href + (plain ? '' : '.gz'), {priority:'high'});
+  if (!response.ok || !response.body) throw new Error('Scaricamento non riuscito');
+  const stream = plain ? response.body : response.body.pipeThrough(new DecompressionStream('gzip'));
+  return new Response(stream).text();
+}
+
 async function launch() {
   if (!game || !/^[a-z0-9-]{1,80}$/.test(game)) {
     throw new Error('Gioco non disponibile');
   }
-  if (game === 'eaglecraft-26-3') {
-    try { window.configureArcadeMinecraftRelay(); } catch {}
-  }
   const url = new URL(game+'/index.html', location.href);
-  const plain = params.get('plain') === '1';
-  const response = await fetch(url.href+(plain ? '' : '.gz'));
-  if (!response.ok || !response.body) throw new Error('Scaricamento non riuscito');
-  const stream = plain ? response.body : response.body.pipeThrough(new DecompressionStream('gzip'));
-  const source = await new Response(stream).text();
-  if (params.get('sync') === '1' && Object.hasOwn(arcadeSaveKeys, game)) {
-    try { await window.prepareArcadeSaves(game, arcadeSaveKeys[game], playerOrigin); } catch {}
-  }
+  const [source] = await Promise.all([
+    readGame(url, params.get('plain') === '1'),
+    loadScript('../assets/game-audio.js'),
+    prepareGame()
+  ]);
   const base = /<base\b[^>]*\bhref\s*=\s*["']([^"']*)["']/i;
   const html = base.test(source)
     ? source.replace(base, (tag, href) => tag.replace(/(\bhref\s*=\s*)(["'])[^"']*\2/i,
@@ -52,10 +76,6 @@ async function launch() {
 launch().catch(() => {
   parent.postMessage({type:'arcade-game-failed'}, playerOrigin);
   status.textContent = 'Impossibile caricare il gioco.';
-  const retry = document.createElement('button');
-  retry.textContent = 'Riprova';
-  retry.onclick = () => location.reload();
-  status.after(retry);
 });
 </script>
 </body>

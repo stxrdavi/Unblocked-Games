@@ -20,8 +20,20 @@
   --line: #3b324d;
   --violet: #b99aff;
   --acid: #c5acff;
+  --scroll-thumb: #9e7dc4;
   --display: "Space Grotesk", system-ui, sans-serif;
   font: 15px/1.5 Inter, system-ui, sans-serif;
+}
+@media (forced-colors: none) {
+  @supports selector(::-webkit-scrollbar) {
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: var(--paper); }
+    ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border: 2px solid var(--paper); border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--violet); }
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    * { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) var(--paper); }
+  }
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>1 on 1 Soccer</title>
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; background: #181423; }
+    ruffle-player { display: block; width: 100%; height: 100%; }
+    #status { color: #f4efff; text-align: center; font: 1rem system-ui; }
+  </style>
+  <script src="../../assets/game-audio.js" defer></script>
+  <script>
+    // Serve the bundled WebAssembly compressed and stream it into the emulator.
+    const wasm = new URL('f9db7455c2c80fac021b.wasm', location.href).href;
+    const fetchAsset = window.fetch.bind(window);
+    window.fetch = async (input, options) => {
+      const url = input instanceof Request ? input.url : new URL(input, location.href).href;
+      if (url !== wasm) return fetchAsset(input, options);
+      const response = await fetchAsset(wasm + '.gz', options);
+      if (!response.ok || !response.body) return response;
+      return new Response(response.body.pipeThrough(new DecompressionStream('gzip')), {
+        headers: {'Content-Type': 'application/wasm'}
+      });
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const status = document.getElementById('status');
+      try {
+        const player = window.RufflePlayer.newest().createPlayer();
+        document.body.append(player);
+        await player.load(new URL('1-on-1-soccer.swf', location.href).href);
+      } catch {
+        status.hidden = false;
+      }
+    }, {once: true});
+  </script>
+  <script src="ruffle.js" defer></script>
+</head>
+<body>
+  <p id="status" role="status" lang="it" hidden>Impossibile avviare 1 on 1 Soccer.</p>
+</body>
+</html>
