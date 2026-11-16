@@ -93,13 +93,7 @@ async function fetchArcadeFriends(session, signal) {
     const friends = people.filter(person => person.relationship === 'friend');
     const incoming = people.filter(person => person.relationship === 'incoming');
     get('friends-title').textContent = 'Amici ('+friends.length+')';
-    const add = button('', () => search.focus(), 'friend-tile');
-    const plus = document.createElement('span');
-    plus.className = 'friend-avatar';
-    plus.setAttribute('aria-hidden','true');
-    plus.append(arcadeIcon('add'));
-    add.append(plus, 'Aggiungi amici');
-    strip.replaceChildren(add);
+    strip.replaceChildren();
     for (const person of friends) {
       const tile = button('', () => dialog.dispatchEvent(new CustomEvent('arcade-open-player', {detail:person})), 'friend-tile');
       const photo = document.createElement('span');

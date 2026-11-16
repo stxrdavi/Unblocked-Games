@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=violet-scrollbars">
+<link rel="stylesheet" href="assets/arcade.css?v=admin-panel">
 <script src="assets/save-bridge.js?v=1"></script>
 </head>
 <body>
@@ -167,17 +167,48 @@
   </form>
 </dialog>
 <dialog id="admin-dialog" aria-labelledby="admin-title">
-  <form id="admin-form">
-    <div class="auth-heading"><h2 id="admin-title">Pannello admin</h2><button type="button" class="secondary" id="admin-close">Chiudi</button></div>
-    <label for="admin-name">Username</label>
-    <input id="admin-name" name="username" required minlength="3" maxlength="24" autocomplete="off">
-    <div class="profile-form-actions">
-      <button class="secondary" type="submit" value="status">Controlla stato</button>
-      <button class="secondary" type="submit" value="ban">Banna account</button>
-      <button class="secondary" type="submit" value="unban">Sblocca account</button>
-    </div>
+  <header class="admin-header">
+    <h2 id="admin-title">Pannello admin</h2>
+    <button type="button" class="secondary" id="admin-close">Chiudi</button>
+  </header>
+  <div class="admin-body">
+    <dl class="admin-metrics" aria-label="Attività su Arcade">
+      <div><dt>Online</dt><dd id="admin-online">—</dd></div>
+      <div><dt>In gioco</dt><dd id="admin-playing">—</dd></div>
+    </dl>
+    <form id="admin-form">
+      <label for="admin-name">Cerca un account</label>
+      <div class="admin-search">
+        <input id="admin-name" name="username" required minlength="2" maxlength="24" pattern="[a-zA-Z0-9_.\-]{2,24}" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="Username">
+        <button class="secondary" type="submit"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#search"></use></svg> Cerca</button>
+      </div>
+    </form>
     <p id="admin-status" role="status"></p>
-  </form>
+    <ul id="admin-matches" aria-label="Account trovati" hidden></ul>
+    <section class="admin-account" id="admin-account" aria-labelledby="admin-account-name" hidden>
+      <header>
+        <span class="admin-avatar" aria-hidden="true"><span id="admin-initial"></span><img id="admin-avatar" alt="" hidden></span>
+        <h3 id="admin-account-name" tabindex="-1"></h3>
+        <span id="admin-access"></span>
+      </header>
+      <p id="admin-bio" hidden></p>
+      <dl class="admin-metrics admin-stats">
+        <div><dt>Tempo di gioco</dt><dd id="admin-play-time">—</dd></div>
+        <div><dt>Gioco più giocato</dt><dd id="admin-top-game">—</dd></div>
+      </dl>
+      <div class="admin-actions">
+        <button type="button" class="secondary admin-danger" id="admin-ban" hidden>Banna account</button>
+        <button type="button" class="secondary" id="admin-unban" hidden>Sblocca account</button>
+      </div>
+      <div class="admin-confirm" id="admin-confirm" hidden>
+        <p id="admin-confirm-text"></p>
+        <div class="admin-actions">
+          <button type="button" class="secondary" id="admin-cancel">Annulla</button>
+          <button type="button" class="secondary admin-danger" id="admin-confirm-ban">Conferma ban</button>
+        </div>
+      </div>
+    </section>
+  </div>
 </dialog>
 <dialog id="account-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
   <h2 id="welcome-title">Benvenuto su Arcade</h2>
@@ -849,11 +880,11 @@ if (serverMode && !profileSession) {
 <script src="assets/profile.js?v=7"></script>
 <script src="assets/profile-search.js?v=3"></script>
 <script src="assets/game-search.js?v=1"></script>
-<script src="assets/friends.js?v=4"></script>
+<script src="assets/friends.js?v=5"></script>
 <script src="assets/chat-avatar.js?v=1"></script>
 <script src="assets/dm.js?v=4"></script>
 <script src="assets/global-chat.js?v=3"></script>
-<script src="assets/moderation.js?v=1"></script>
-<script src="assets/online-counts.js?v=1"></script>
+<script src="assets/moderation.js?v=2"></script>
+<script src="assets/online-counts.js?v=2"></script>
 </body>
 </html>

@@ -2,6 +2,8 @@
   'use strict';
   if (!window.crypto?.randomUUID) return;
   const counts = get('site-presence');
+  const adminOnline = get('admin-online');
+  const adminPlaying = get('admin-playing');
   const pageId = crypto.randomUUID();
   const guestKey = 'arcade-presence-guest';
   const format = new Intl.NumberFormat('it');
@@ -41,11 +43,14 @@
       if (!response.ok) throw new Error('Counts unavailable');
       const [activity] = await response.json();
       if (session !== profileSession || !activity) return;
-      get('online-count').textContent = format.format(activity.online);
-      get('playing-count').textContent = format.format(activity.playing);
+      adminOnline.textContent = get('online-count').textContent = format.format(activity.online);
+      adminPlaying.textContent = get('playing-count').textContent = format.format(activity.playing);
       counts.hidden = false;
     } catch {
-      if (session === profileSession) counts.hidden = true;
+      if (session === profileSession) {
+        counts.hidden = true;
+        adminOnline.textContent = adminPlaying.textContent = '—';
+      }
     } finally {
       sending = false;
       if (updatePending) {
