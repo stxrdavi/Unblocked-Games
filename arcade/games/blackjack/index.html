@@ -289,7 +289,16 @@ const get = id => document.getElementById(id);
 const bets = [...document.querySelectorAll('.bet-options .chip')];
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const cards = { dealer: [], player: [] };
+const balanceKey = 'arcade-blackjack-balance';
 let balance = 250;
+try {
+  const saved = localStorage.getItem(balanceKey);
+  if (saved !== null && Number.isSafeInteger(Number(saved)) && Number(saved) >= 0) balance = Number(saved);
+} catch {}
+
+function saveBalance() {
+  try { localStorage.setItem(balanceKey, String(balance)); } catch {}
+}
 let stake = 0;
 let pendingBet = 0;
 let deck = [];
@@ -398,6 +407,7 @@ function updateControls() {
 function finish(message, result, payout) {
   phase = 'ready';
   balance += payout;
+  saveBalance();
   setMessage(message, result);
   updateControls();
 }
@@ -492,6 +502,7 @@ get('double').onclick = () => {
 get('reset').onclick = () => {
   if (phase !== 'ready' || balance >= 2) return;
   balance = 250;
+  saveBalance();
   clearHands();
   setMessage('Scegli la puntata e distribuisci le carte.');
   updateControls();

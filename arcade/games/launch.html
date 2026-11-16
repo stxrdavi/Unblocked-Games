@@ -6,6 +6,8 @@
 <title>Caricamento gioco</title>
 <script src="../assets/game-audio.js"></script>
 <script src="../assets/minecraft-relay.js?v=1"></script>
+<script src="../assets/save-bridge.js?v=1"></script>
+<script src="../assets/game-saves.js?v=1"></script>
 <style>
   body { margin: 0; display: grid; place-items: center; min-height: 100vh; background: #171122; color: white; font: 16px system-ui; }
 </style>
@@ -14,19 +16,28 @@
 <p id="status" role="status">Scaricamento del gioco…</p>
 <script>
 'use strict';
-const game = new URLSearchParams(location.search).get('game');
+const params = new URLSearchParams(location.search);
+const game = params.get('game');
+const playerOrigin = location.hostname === 'www.calcolatrice.website.'
+  ? 'https://www.calcolatrice.website' : location.origin;
 const status = document.getElementById('status');
 
 async function launch() {
   if (!game || !/^[a-z0-9-]{1,80}$/.test(game)) {
     throw new Error('Gioco non disponibile');
   }
-  if (game === 'eaglecraft-26-3') window.configureArcadeMinecraftRelay();
+  if (game === 'eaglecraft-26-3') {
+    try { window.configureArcadeMinecraftRelay(); } catch {}
+  }
   const url = new URL(game+'/index.html', location.href);
-  const response = await fetch(url.href+'.gz');
+  const plain = params.get('plain') === '1';
+  const response = await fetch(url.href+(plain ? '' : '.gz'));
   if (!response.ok || !response.body) throw new Error('Scaricamento non riuscito');
-  const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
+  const stream = plain ? response.body : response.body.pipeThrough(new DecompressionStream('gzip'));
   const source = await new Response(stream).text();
+  if (params.get('sync') === '1' && Object.hasOwn(arcadeSaveKeys, game)) {
+    try { await window.prepareArcadeSaves(game, arcadeSaveKeys[game], playerOrigin); } catch {}
+  }
   const base = /<base\b[^>]*\bhref\s*=\s*["']([^"']*)["']/i;
   const html = base.test(source)
     ? source.replace(base, (tag, href) => tag.replace(/(\bhref\s*=\s*)(["'])[^"']*\2/i,
@@ -35,11 +46,11 @@ async function launch() {
   document.open();
   document.write(html);
   document.close();
-  parent.postMessage({type:'arcade-game-opened'}, location.origin);
+  parent.postMessage({type:'arcade-game-opened'}, playerOrigin);
 }
 
 launch().catch(() => {
-  parent.postMessage({type:'arcade-game-failed'}, location.origin);
+  parent.postMessage({type:'arcade-game-failed'}, playerOrigin);
   status.textContent = 'Impossibile caricare il gioco.';
   const retry = document.createElement('button');
   retry.textContent = 'Riprova';

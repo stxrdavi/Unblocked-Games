@@ -7,7 +7,8 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=chat-alignment">
+<link rel="stylesheet" href="assets/arcade.css?v=cloud-refresh">
+<script src="assets/save-bridge.js?v=1"></script>
 </head>
 <body>
 <header class="top"><div class="shell">
@@ -169,7 +170,7 @@
 </dialog>
 <dialog id="account-welcome" aria-labelledby="welcome-title" aria-describedby="welcome-description">
   <h2 id="welcome-title">Benvenuto su Arcade</h2>
-  <p id="welcome-description">Crea un account per salvare i tuoi progressi sul profilo, aggiungere amici e scambiare DM con loro.</p>
+  <p id="welcome-description">Crea un account per sincronizzare i progressi dei giochi compatibili, aggiungere amici e scambiare DM con loro.</p>
   <p>Bastano uno username e una password, senza email.</p>
   <div class="welcome-actions">
     <button class="secondary" type="button" id="welcome-create" autofocus>Crea account</button>
@@ -211,7 +212,8 @@
 const titleOrder = new Intl.Collator('it', {numeric:true, sensitivity:'base'});
 const games = JSON.parse(document.getElementById('game-data').textContent);
 const byId = new Map(games.map(game => [game.id, game]));
-const gameOrigin = location.origin;
+const gameOrigin = location.hostname === 'www.calcolatrice.website'
+  ? 'https://www.calcolatrice.website.' : location.origin;
 const get = id => document.getElementById(id);
 const featuredGames = games.filter(game => game.cover);
 const featuredKey = 'arcade-featured-game';
@@ -253,21 +255,19 @@ let sessionStorageAvailable = true;
 let sessionQueue = Promise.resolve();
 let register = false;
 let playerRequest = 0;
-let gameBlobUrl;
 let loadingTimer;
-let gameDownload;
 let launcherCleanup;
 let gameMuted = false;
 const audioButton = get('game-audio');
 
 function syncGameAudio() {
   const frame = get('frame-slot').querySelector('iframe');
-  frame?.contentWindow?.postMessage({type:'arcade-audio', muted:gameMuted}, '*');
+  frame?.contentWindow?.postMessage({type:'arcade-audio', muted:gameMuted}, gameOrigin);
 }
 
 window.addEventListener('message', event => {
   const frame = get('frame-slot').querySelector('iframe');
-  if (!frame || event.source !== frame.contentWindow || event.data?.type !== 'arcade-audio-ready') return;
+  if (!frame || event.origin !== gameOrigin || event.source !== frame.contentWindow || event.data?.type !== 'arcade-audio-ready') return;
   audioButton.disabled = false;
   syncGameAudio();
 });
@@ -284,13 +284,9 @@ function clearGameFrame() {
   launcherCleanup = undefined;
   audioButton.disabled = true;
   clearTimeout(loadingTimer);
-  gameDownload?.abort();
-  gameDownload = undefined;
   get('game-loading').hidden = true;
   get('frame-slot').setAttribute('aria-busy', 'false');
   get('frame-slot').replaceChildren();
-  if (gameBlobUrl) URL.revokeObjectURL(gameBlobUrl);
-  gameBlobUrl = undefined;
 }
 
 function setGameLoading(message, retry = false, failed = false) {
@@ -663,6 +659,7 @@ function reloadGame() {
 
 async function showGame(game, {reloading = false} = {}) {
   const request = ++playerRequest;
+  const supportsCloud = Object.hasOwn(arcadeSaveKeys, game.id);
   get('home').hidden = true;
   get('player').hidden = false;
   get('game-title').textContent = game.title;
@@ -673,7 +670,7 @@ async function showGame(game, {reloading = false} = {}) {
   const note = get('player-note');
   note.textContent = game.id === 'eaglecraft-26-3'
     ? 'Online già configurato. Apri il mondo → Relay LAN e condividi il codice. Gli amici entrano da Multiplayer → Direct Connection → Join LAN World. Al primo avvio il relay può richiedere circa un minuto.'
-    : (game.notice || '');
+    : game.notice || (supportsCloud ? 'Usa lo stesso account sui tuoi dispositivi per ritrovare i progressi.' : '');
   note.hidden = !note.textContent;
   const frame = document.createElement('iframe');
   frame.className = 'player-frame game-' + game.id;
@@ -691,7 +688,8 @@ async function showGame(game, {reloading = false} = {}) {
   loadingTimer = setTimeout(() => {
     if (request === playerRequest) setGameLoading('Il gioco sta impiegando più tempo del previsto.', true);
   },15000);
-  const useLauncher = Boolean(game.compressed);
+  const useCloud = gameOrigin !== location.origin && Boolean(profileSession && supportsCloud);
+  const useLauncher = game.compressed || useCloud;
   const finishLoading = () => {
     if (request !== playerRequest) return;
     clearTimeout(loadingTimer);
@@ -701,7 +699,11 @@ async function showGame(game, {reloading = false} = {}) {
   };
   if (useLauncher) {
     window.addEventListener('message', handleLauncher);
-    launcherCleanup = () => window.removeEventListener('message', handleLauncher);
+    const disconnectSaves = useCloud ? connectGameSaves(frame, game) : () => {};
+    launcherCleanup = () => {
+      disconnectSaves();
+      window.removeEventListener('message', handleLauncher);
+    };
   } else {
     frame.addEventListener('load', finishLoading, {once:true});
   }
@@ -720,8 +722,12 @@ async function showGame(game, {reloading = false} = {}) {
   }, {once:true});
   // Games need a real, certificate-valid origin for IndexedDB, workers and audio.
   frame.sandbox = 'allow-scripts allow-pointer-lock allow-same-origin allow-downloads';
-  const url = new URL(game.compressed ? 'games/launch.html?v=3' : game.url, location.href);
-  if (game.compressed) url.searchParams.set('game', game.id);
+  const url = new URL(useLauncher ? 'games/launch.html?v=4' : game.url, gameOrigin + location.pathname);
+  if (useLauncher) url.searchParams.set('game', game.id);
+  if (useCloud) {
+    url.searchParams.set('sync', '1');
+    url.searchParams.set('plain', '1');
+  }
   if (reloading) url.searchParams.set('retry', Date.now());
   frame.src = url.href;
   if (request !== playerRequest) return;
