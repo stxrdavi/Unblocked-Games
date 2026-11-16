@@ -211,7 +211,7 @@
 const titleOrder = new Intl.Collator('it', {numeric:true, sensitivity:'base'});
 const games = JSON.parse(document.getElementById('game-data').textContent);
 const byId = new Map(games.map(game => [game.id, game]));
-const gameOrigin = 'https://www.calcolatrice.website.';
+const gameOrigin = location.origin;
 const get = id => document.getElementById(id);
 const featuredGames = games.filter(game => game.cover);
 const featuredKey = 'arcade-featured-game';
@@ -671,8 +671,10 @@ async function showGame(game, {reloading = false} = {}) {
   playerCover.hidden = !game.cover;
   if (game.cover) playerCover.src = game.cover;
   const note = get('player-note');
-  note.textContent = game.notice || '';
-  note.hidden = !game.notice;
+  note.textContent = game.id === 'eaglecraft-26-3'
+    ? 'Online già configurato. Apri il mondo → Relay LAN e condividi il codice. Gli amici entrano da Multiplayer → Direct Connection → Join LAN World. Al primo avvio il relay può richiedere circa un minuto.'
+    : (game.notice || '');
+  note.hidden = !note.textContent;
   const frame = document.createElement('iframe');
   frame.className = 'player-frame game-' + game.id;
   frame.title = game.title;
@@ -689,7 +691,7 @@ async function showGame(game, {reloading = false} = {}) {
   loadingTimer = setTimeout(() => {
     if (request === playerRequest) setGameLoading('Il gioco sta impiegando più tempo del previsto.', true);
   },15000);
-  const useLauncher = game.compressed && location.origin === 'https://www.calcolatrice.website';
+  const useLauncher = Boolean(game.compressed);
   const finishLoading = () => {
     if (request !== playerRequest) return;
     clearTimeout(loadingTimer);
@@ -716,40 +718,12 @@ async function showGame(game, {reloading = false} = {}) {
     clearTimeout(loadingTimer);
     setGameLoading('Impossibile aprire il gioco.', true, true);
   }, {once:true});
-  frame.sandbox = 'allow-scripts allow-pointer-lock';
-  if (location.origin === 'https://www.calcolatrice.website') {
-    // Keep storage and browser APIs available to games on their own origin.
-    const url = new URL(game.compressed ? 'games/launch.html?v=2' : game.url, gameOrigin+'/arcade/');
-    if (game.compressed) url.searchParams.set('game', game.id);
-    frame.sandbox.add('allow-same-origin');
-    frame.src = url.href;
-  } else if (game.compressed) {
-    try {
-      gameDownload = new AbortController();
-      const response = await fetch(game.url + '.gz',{signal:gameDownload.signal});
-      if (!response.ok || !response.body) throw new Error('Caricamento fallito');
-      const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
-      const source = await new Response(stream).text();
-      if (request !== playerRequest) return;
-      const base = '<base href="' + new URL(game.url, location.href).href + '">';
-      const withBase = /<base\b/i.test(source) ? source
-        : source.replace(/^(\s*<!doctype[^>]*>)?/i, '$&' + base);
-      const audioScript = document.createElement('script');
-      audioScript.src = new URL('assets/game-audio.js', location.href).href;
-      audioScript.dataset.playerOrigin = location.origin;
-      const withAudio = withBase.replace(/^(\s*<!doctype[^>]*>)?/i, '$&' + audioScript.outerHTML);
-      gameBlobUrl = URL.createObjectURL(new Blob([withAudio], {type:'text/html;charset=utf-8'}));
-      frame.src = gameBlobUrl;
-      setGameLoading('Apertura del gioco…');
-    } catch {
-      if (request !== playerRequest) return;
-      clearTimeout(loadingTimer);
-      setGameLoading('Impossibile caricare il gioco. Riprova o usa un browser aggiornato.', true, true);
-      return;
-    }
-  } else {
-    frame.src = game.url;
-  }
+  // Games need a real, certificate-valid origin for IndexedDB, workers and audio.
+  frame.sandbox = 'allow-scripts allow-pointer-lock allow-same-origin allow-downloads';
+  const url = new URL(game.compressed ? 'games/launch.html?v=3' : game.url, location.href);
+  if (game.compressed) url.searchParams.set('game', game.id);
+  if (reloading) url.searchParams.set('retry', Date.now());
+  frame.src = url.href;
   if (request !== playerRequest) return;
   get('frame-slot').replaceChildren(frame);
 }
