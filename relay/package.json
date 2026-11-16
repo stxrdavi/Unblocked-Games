@@ -1,0 +1,16 @@
+{
+  "name": "arcade-lan-relay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.1.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "ws": "8.23.0"
+  }
+}

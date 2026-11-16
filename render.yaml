@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: arcade-lan-relay
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: relay
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
