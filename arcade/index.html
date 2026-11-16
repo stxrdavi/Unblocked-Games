@@ -37,7 +37,6 @@
   <div class="header-actions">
     <button class="saved" type="button" id="favorites" aria-pressed="false"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#star"></use></svg> Preferiti</button>
     <button class="saved" type="button" id="account-button">
-      <svg class="icon" id="account-guest-icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#profile"></use></svg>
       <span class="account-picture" id="account-picture" aria-hidden="true" hidden><span id="account-initial"></span><img id="account-avatar" alt="" hidden></span>
       <span id="account-name">Accedi</span>
     </button>
@@ -434,7 +433,6 @@ function accountView() {
   accountForm.elements.password.autocomplete = register ? 'new-password' : 'current-password';
   get('account-name').textContent = username || 'Accedi';
   get('account-picture').hidden = !username;
-  get('account-guest-icon').hidden = Boolean(username);
   get('account-initial').textContent = username?.charAt(0).toLocaleUpperCase('it') || '';
   get('account-mode').textContent = !serverMode
     ? 'Apri Arcade con Avvia-Arcade.cmd per usare gli account.'
