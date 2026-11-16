@@ -27,7 +27,7 @@
   function display() {
     const name = profile?.username || profileSession.username;
     get('profile-name').textContent = name;
-    accountButton.textContent = name;
+    get('account-name').textContent = name;
     const bio = get('profile-bio');
     bio.textContent = profile?.bio || '';
     bio.hidden = !bio.textContent;

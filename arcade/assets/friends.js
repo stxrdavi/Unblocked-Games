@@ -97,7 +97,7 @@ async function fetchArcadeFriends(session, signal) {
     const plus = document.createElement('span');
     plus.className = 'friend-avatar';
     plus.setAttribute('aria-hidden','true');
-    plus.textContent = '+';
+    plus.append(arcadeIcon('add'));
     add.append(plus, 'Aggiungi amici');
     strip.replaceChildren(add);
     for (const person of friends) {
