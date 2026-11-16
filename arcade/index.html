@@ -7,13 +7,13 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=studio">
+<link rel="stylesheet" href="assets/arcade.css?v=violet-profile">
 <script src="assets/save-bridge.js?v=1"></script>
 </head>
 <body>
 <header class="top"><div class="shell">
   <div class="brand-group">
-    <a class="brand" href="#" aria-label="Arcade, home"><span class="brand-mark"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#game"></use></svg></span>Arcade</a>
+    <a class="brand" href="#" aria-label="Arcade, home">Arcade</a>
     <div class="site-presence" id="site-presence" aria-label="Attività su Arcade" hidden>
       <span><b id="online-count"></b> online</span>
       <span><b id="playing-count"></b> in gioco</span>
@@ -36,7 +36,11 @@
   </div>
   <div class="header-actions">
     <button class="saved" type="button" id="favorites" aria-pressed="false"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#star"></use></svg> Preferiti</button>
-    <button class="saved" type="button" id="account-button"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#profile"></use></svg><span id="account-name">Accedi</span></button>
+    <button class="saved" type="button" id="account-button">
+      <svg class="icon" id="account-guest-icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#profile"></use></svg>
+      <span class="account-picture" id="account-picture" aria-hidden="true" hidden><span id="account-initial"></span><img id="account-avatar" alt="" hidden></span>
+      <span id="account-name">Accedi</span>
+    </button>
   </div>
 </div></header>
 <main class="shell">
@@ -429,6 +433,9 @@ function accountView() {
   get('account-password-hint').hidden = !register;
   accountForm.elements.password.autocomplete = register ? 'new-password' : 'current-password';
   get('account-name').textContent = username || 'Accedi';
+  get('account-picture').hidden = !username;
+  get('account-guest-icon').hidden = Boolean(username);
+  get('account-initial').textContent = username?.charAt(0).toLocaleUpperCase('it') || '';
   get('account-mode').textContent = !serverMode
     ? 'Apri Arcade con Avvia-Arcade.cmd per usare gli account.'
     : register ? 'Crea un account per salvare la tua attività di gioco sul profilo. Bastano uno username e una password, senza email.' : 'Accedi per aprire il tuo profilo e vedere le statistiche.';
@@ -840,7 +847,7 @@ if (serverMode && !profileSession) {
   accountWelcome.showModal();
 }
 </script>
-<script src="assets/profile.js?v=6"></script>
+<script src="assets/profile.js?v=7"></script>
 <script src="assets/profile-search.js?v=3"></script>
 <script src="assets/game-search.js?v=1"></script>
 <script src="assets/friends.js?v=4"></script>

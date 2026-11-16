@@ -5,6 +5,8 @@
   const status = get('profile-status');
   const edit = get('profile-edit');
   const avatar = get('profile-avatar');
+  const accountAvatar = get('account-avatar');
+  let avatarRevision = 0;
   let profile;
   let play = {id:'', started:0, session:null};
   async function api(path, data, method = 'POST', prefer, session = profileSession) {
@@ -24,10 +26,33 @@
     return response.json();
   }
 
+  function setAccountAvatar(source) {
+    avatarRevision++;
+    accountAvatar.hidden = !source;
+    if (source) accountAvatar.src = source;
+    else accountAvatar.removeAttribute('src');
+  }
+
+  async function loadAccountAvatar() {
+    const session = profileSession;
+    setAccountAvatar('');
+    if (!session) return;
+    const revision = avatarRevision;
+    try {
+      const [data] = await api('arcade_profiles?select=avatar&limit=1', undefined, 'GET', undefined, session);
+      if (session === profileSession && revision === avatarRevision) setAccountAvatar(data?.avatar);
+    } catch {}
+  }
+  accountAvatar.addEventListener('error', () => { accountAvatar.hidden = true; });
+  window.addEventListener('arcade-session-change', loadAccountAvatar);
+  loadAccountAvatar();
+
   function display() {
     const name = profile?.username || profileSession.username;
     get('profile-name').textContent = name;
     get('account-name').textContent = name;
+    get('account-initial').textContent = name.charAt(0).toLocaleUpperCase('it');
+    if (profile) setAccountAvatar(profile.avatar);
     const bio = get('profile-bio');
     bio.textContent = profile?.bio || '';
     bio.hidden = !bio.textContent;
@@ -57,6 +82,7 @@
     profile = profiles[0];
     if (profile?.username) await rememberProfileName(session, profile.username);
     if (session !== profileSession) return;
+    if (!profile) setAccountAvatar('');
     display();
     const minutes = Math.floor(stats.reduce((sum,row)=>sum+Number(row.seconds),0)/60);
     get('profile-time').textContent = minutes >= 60 ? Math.floor(minutes/60)+' h '+minutes%60+' min' : minutes+' min';
