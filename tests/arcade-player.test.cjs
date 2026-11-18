@@ -103,3 +103,16 @@ test('games with cloud sync still restore saves and load the plain HTML', async 
   assert.deepEqual(result.restored, {game:'2048', keys:['gameState'], origin:'https://www.calcolatrice.website'});
   assert.equal(result.message.type, 'arcade-game-opened');
 });
+
+// Exercise the actual routing helper used by showGame, including custom-domain
+// and GitHub Pages installations. The dotted alias must not receive 26.3.
+test('26.3 launches on the page origin, while other game routing is preserved', () => {
+  const page = readFileSync(resolve(root, 'arcade/index.html'), 'utf8');
+  const helper = page.match(/function playerOriginFor\(game\) \{[\s\S]*?\n\}/)[0];
+  for (const origin of ['https://www.calcolatrice.website', 'https://stxrdavi.github.io']) {
+    const context = {location: {origin}, gameOrigin: 'https://www.calcolatrice.website.'};
+    runInNewContext(helper, context);
+    assert.equal(context.playerOriginFor({id:'eaglecraft-26-3'}), origin);
+    assert.equal(context.playerOriginFor({id:'2048'}), context.gameOrigin);
+  }
+});
