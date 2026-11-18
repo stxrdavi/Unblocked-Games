@@ -145,6 +145,7 @@ async function fetchArcadeFriends(session, signal) {
       ready = true;
       status.textContent = '';
       if (changed) render();
+      window.dispatchEvent(new CustomEvent('arcade-friends-updated', {detail:people}));
     } catch {
       if (request !== revision || session !== profileSession) return;
       status.textContent = 'Lista amici al momento non disponibile.';

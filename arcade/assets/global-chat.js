@@ -14,6 +14,24 @@
   let ready = false;
   let lastViewer;
   let lastOwnership;
+  let seenId;
+  let noticeStart = Date.now();
+
+  function checkMentions(messages, session) {
+    if (!session) return;
+    for (const message of messages) {
+      const isNew = seenId === undefined ? Date.parse(message.sent_at) >= noticeStart : message.id > seenId;
+      if (!isNew || message.mine === true || (message.mine === undefined && message.username === session.username)) continue;
+      const tags = message.body.matchAll(/(?<![\w.@-])@([a-z0-9_.-]+)/gi);
+      if (![...tags].some(tag => tag[1].toLowerCase() === session.username.toLowerCase())) continue;
+      arcadeNotices.push({
+        title:'Menzione nella chat globale', detail:message.username,
+        suppressed:() => panel.open,
+        reply:open
+      });
+    }
+    if (messages.length) seenId = Math.max(seenId ?? 0, Number(messages.at(-1).id));
+  }
 
   function guestIdentity() {
     if (guestId) return guestId;
@@ -82,7 +100,16 @@
         ? profileButton(message.username, message.username, openProfile)
         : message.username+' · ';
       author.prepend(name);
-      bubble.append(author, document.createTextNode(message.body));
+      bubble.append(author);
+      for (const [index, part] of message.body.split(/((?<![\w.@-])@[a-z0-9_.-]+)/gi).entries()) {
+        if (index % 2 === 0) bubble.append(part);
+        else {
+          const mention = document.createElement('span');
+          mention.className = 'chat-mention';
+          mention.textContent = part;
+          bubble.append(mention);
+        }
+      }
       row.append(message.has_profile ? profileButton(message.username, avatar, openProfile, true) : avatar, bubble);
       return row;
     }));
@@ -90,14 +117,16 @@
   }
 
   async function refresh() {
-    if (!panel.open || reading) return;
+    if ((!panel.open && !profileSession) || reading) return;
     reading = true;
     const session = profileSession;
     try {
       const token = session ? await accessToken(session) : null;
       if (session !== profileSession) return;
       const messages = await request('read', {guest_id:session ? null : guestIdentity()}, token);
-      if (!panel.open || session !== profileSession) return;
+      if (session !== profileSession) return;
+      checkMentions(messages, session);
+      if (!panel.open) return;
       render(messages, session);
       if (!sending && (!ready || !status.textContent || status.textContent === 'Scrivi il primo messaggio.')) {
         status.textContent = messages.length ? '' : 'Scrivi il primo messaggio.';
@@ -116,25 +145,30 @@
     if (panel.open) panel.close();
     launcher.setAttribute('aria-expanded', 'false');
   }
-  launcher.onclick = () => {
-    if (panel.open) { close(); return; }
+  function open() {
+    if (panel.open || document.fullscreenElement) return;
     get('dm-dialog').close();
     panel.show();
+    arcadeNotices.recheck();
     launcher.setAttribute('aria-expanded', 'true');
     ready = false;
     send.disabled = true;
     status.textContent = 'Caricamento chat…';
     input.focus();
     refresh();
-  };
+  }
+  launcher.onclick = () => { if (panel.open) close(); else open(); };
   get('global-close').onclick = () => { close(); launcher.focus(); };
   panel.addEventListener('keydown', event => {
     if (event.key === 'Escape') { event.preventDefault(); close(); launcher.focus(); }
   });
   get('dm-launcher').addEventListener('click', close);
   window.addEventListener('arcade-open-dm', close);
+  window.addEventListener('arcade-close-global', close);
   window.addEventListener('arcade-session-change', () => {
     log.replaceChildren();
+    seenId = undefined;
+    noticeStart = Date.now();
     refresh();
   });
   document.addEventListener('fullscreenchange', () => { if (document.fullscreenElement) close(); });
@@ -161,4 +195,6 @@
     refresh();
   });
   setInterval(() => { if (!document.hidden) refresh(); }, 4000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+  refresh();
 })();

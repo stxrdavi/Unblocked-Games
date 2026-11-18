@@ -7,10 +7,17 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=game-progress">
+<link rel="stylesheet" href="assets/arcade.css?v=notices">
 <script src="assets/save-bridge.js?v=1"></script>
 </head>
 <body>
+<aside id="arcade-notice" popover="manual" aria-label="Notifica Arcade" hidden>
+  <div role="status"><strong id="notice-title"></strong><p id="notice-detail"></p></div>
+  <div class="notice-actions">
+    <button class="secondary" type="button" id="notice-ignore">Ignora</button>
+    <button class="secondary" type="button" id="notice-reply">Rispondi</button>
+  </div>
+</aside>
 <header class="top"><div class="shell">
   <div class="brand-group">
     <a class="brand" href="#" aria-label="Arcade, home">Arcade</a>
@@ -87,7 +94,7 @@
         <button id="fullscreen" class="secondary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#fullscreen"></use></svg> Schermo intero</button>
       </div>
     </div>
-    <div class="player-stage">
+    <div class="player-stage" id="player-stage">
       <div id="frame-slot" aria-busy="false"></div>
       <div id="game-loading" class="game-loading" hidden>
         <div class="game-loading-spinner" aria-hidden="true"></div>
@@ -152,7 +159,7 @@
   <div id="global-messages" role="log" aria-label="Messaggi pubblici" tabindex="0"></div>
   <p id="global-status" role="status"></p>
   <form id="global-form">
-    <div><input id="global-text" aria-label="Messaggio pubblico" placeholder="Scrivi a tutti…" required maxlength="500" autocomplete="off"><button class="secondary" type="submit" disabled><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#send"></use></svg> Invia</button></div>
+    <div><input id="global-text" aria-label="Messaggio pubblico" placeholder="Scrivi a tutti o usa @nomeutente…" required maxlength="500" autocomplete="off"><button class="secondary" type="submit" disabled><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#send"></use></svg> Invia</button></div>
   </form>
 </dialog>
 <dialog id="dm-dialog" aria-labelledby="dm-title">
@@ -817,7 +824,7 @@ async function showGame(game, {reloading = false} = {}) {
     clearTimeout(loadingTimer);
     get('game-loading').hidden = true;
     get('frame-slot').setAttribute('aria-busy', 'false');
-    get('fullscreen').hidden = typeof frame.requestFullscreen !== 'function';
+    get('fullscreen').hidden = !document.fullscreenEnabled || typeof get('player-stage').requestFullscreen !== 'function';
   };
   if (useLauncher) {
     window.addEventListener('message', handleLauncher);
@@ -922,7 +929,7 @@ get('back').addEventListener('click', () => { location.hash = '#catalogo'; });
 get('fullscreen').addEventListener('click', async () => {
   const frame = get('frame-slot').querySelector('iframe');
   if (!frame) return;
-  try { await frame.requestFullscreen(); frame.focus(); }
+  try { await get('player-stage').requestFullscreen(); frame.focus(); }
   catch {
     const note = get('player-note');
     note.textContent = 'Schermo intero non disponibile in questo browser.';
@@ -960,10 +967,11 @@ if (serverMode && !profileSession) {
 <script src="assets/profile.js?v=7"></script>
 <script src="assets/profile-search.js?v=3"></script>
 <script src="assets/game-search.js?v=1"></script>
-<script src="assets/friends.js?v=5"></script>
+<script src="assets/notifications.js?v=1"></script>
+<script src="assets/friends.js?v=6"></script>
 <script src="assets/chat-avatar.js?v=1"></script>
-<script src="assets/dm.js?v=4"></script>
-<script src="assets/global-chat.js?v=3"></script>
+<script src="assets/dm.js?v=5"></script>
+<script src="assets/global-chat.js?v=4"></script>
 <script src="assets/moderation.js?v=2"></script>
 <script src="assets/online-counts.js?v=2"></script>
 </body>

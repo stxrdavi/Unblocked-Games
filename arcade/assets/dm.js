@@ -13,6 +13,64 @@
   const clock = new Intl.DateTimeFormat('it', {hour:'2-digit', minute:'2-digit'});
   let chat;
   let listRequest;
+  let friends = [];
+  let nextFriend = 0;
+  let polling = false;
+  let noticeStart = Date.now();
+  const lastIncoming = new Map();
+
+  function chatIsOpen(name) {
+    return dialog.open && chat?.name === name;
+  }
+
+  function checkMessages(name, messages) {
+    const previous = lastIncoming.get(name);
+    for (const message of messages) {
+      if (message.mine) continue;
+      // A conversation's first read should not announce its history.
+      const isNew = previous === undefined ? Date.parse(message.sent_at) >= noticeStart : message.id > previous;
+      if (!lastIncoming.has(name) || message.id > lastIncoming.get(name)) lastIncoming.set(name, message.id);
+      if (isNew) arcadeNotices.push({
+        title:'Messaggio privato', detail:name,
+        suppressed:() => chatIsOpen(name),
+        reply:() => openChat(name)
+      });
+    }
+    if (!lastIncoming.has(name)) lastIncoming.set(name, 0);
+  }
+
+  async function pollIncoming() {
+    const session = profileSession;
+    if (!session || document.hidden || polling || !friends.length) return;
+    polling = true;
+    const count = Math.min(4, friends.length);
+    const batch = Array.from({length:count}, (_, offset) => friends[(nextFriend + offset) % friends.length]);
+    nextFriend = (nextFriend + count) % friends.length;
+    try {
+      const token = await accessToken(session);
+      if (session !== profileSession) return;
+      await Promise.allSettled(batch.filter(name => !chatIsOpen(name)).map(async name => {
+        const response = await fetch(authBase+'/rest/v1/rpc/arcade_friend_chat?mine=eq.false&select=id,sent_at', {
+          method:'POST', headers:{apikey:authKey, Authorization:'Bearer '+token, 'Content-Type':'application/json'},
+          body:JSON.stringify({profile_name:name}), signal:AbortSignal.timeout(8000)
+        });
+        if (!response.ok) return;
+        const messages = await response.json();
+        if (session === profileSession && friends.includes(name)) checkMessages(name, messages);
+      }));
+    } catch {
+      // Retry on the next poll if the session refresh failed.
+    } finally {
+      polling = false;
+    }
+  }
+
+  window.addEventListener('arcade-friends-updated', event => {
+    friends = event.detail.filter(person => person.relationship === 'friend').map(person => person.username);
+    pollIncoming();
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) pollIncoming(); });
+  setInterval(pollIncoming, 5000);
 
   function showPanel() {
     if (!dialog.open) dialog.show();
@@ -66,6 +124,7 @@
       const messages = await response.json();
       if (chat !== current || profileSession !== current.session) return;
       render(messages);
+      checkMessages(current.name, messages);
       if (message !== null && input.value.trim() === message) input.value = '';
       status.textContent = messages.length ? '' : 'Scrivi il primo messaggio.';
       current.ready = true;
@@ -94,11 +153,13 @@
     resetChat();
     chat = {name,session:profileSession,controller:new AbortController()};
     get('public-profile').close();
+    window.dispatchEvent(new Event('arcade-close-global'));
     title.textContent = name;
     contacts.hidden = true;
     back.hidden = log.hidden = form.hidden = false;
     status.textContent = 'Caricamento messaggi…';
     showPanel();
+    arcadeNotices.recheck();
     input.focus();
     sync();
   }
@@ -166,6 +227,10 @@
   });
   window.addEventListener('arcade-session-change', () => {
     resetChat();
+    friends = [];
+    nextFriend = 0;
+    noticeStart = Date.now();
+    lastIncoming.clear();
     if (dialog.open) dialog.close();
   });
   form.addEventListener('submit', event => {
