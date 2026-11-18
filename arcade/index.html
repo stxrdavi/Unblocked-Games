@@ -258,6 +258,10 @@ const games = JSON.parse(document.getElementById('game-data').textContent);
 const byId = new Map(games.map(game => [game.id, game]));
 const gameOrigin = location.hostname === 'www.calcolatrice.website'
   ? 'https://www.calcolatrice.website.' : location.origin;
+// The bundled 26.3 client needs a reachable HTTPS origin for its workers and storage.
+function playerOriginFor(game) {
+  return game.id === 'eaglecraft-26-3' ? location.origin : gameOrigin;
+}
 const get = id => document.getElementById(id);
 const featuredGames = games.filter(game => game.cover);
 const featuredKey = 'arcade-featured-game';
@@ -307,12 +311,12 @@ const audioButton = get('game-audio');
 
 function syncGameAudio() {
   const frame = get('frame-slot').querySelector('iframe');
-  frame?.contentWindow?.postMessage({type:'arcade-audio', muted:gameMuted}, gameOrigin);
+  if (frame) frame.contentWindow?.postMessage({type:'arcade-audio', muted:gameMuted}, new URL(frame.src).origin);
 }
 
 window.addEventListener('message', event => {
   const frame = get('frame-slot').querySelector('iframe');
-  if (!frame || event.origin !== gameOrigin || event.source !== frame.contentWindow || event.data?.type !== 'arcade-audio-ready') return;
+  if (!frame || event.origin !== new URL(frame.src).origin || event.source !== frame.contentWindow || event.data?.type !== 'arcade-audio-ready') return;
   audioButton.disabled = false;
   syncGameAudio();
 });
@@ -712,6 +716,7 @@ function reloadGame() {
 }
 
 async function showGame(game, {reloading = false} = {}) {
+  const gameOrigin = playerOriginFor(game);
   const request = ++playerRequest;
   const supportsCloud = Object.hasOwn(arcadeSaveKeys, game.id);
   get('home').hidden = true;
