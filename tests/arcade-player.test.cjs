@@ -69,10 +69,11 @@ test('a saved public relay is not duplicated and damaged storage recovers', () =
   damaged.launch();
   assert.equal(decode(damaged.values.get(key))[0].address, publicRelay);
 });
-async function launchGame(game, source, {sync = false} = {}) {
+async function launchGame(game, source, {sync = false, knownSize = true} = {}) {
   const html = readFileSync(resolve(root, 'arcade/games/launch.html'), 'utf8');
   const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)[1];
   let written, fetched, restored, configured = false;
+  const progress = [];
   const scripts = [];
   let finish;
   const done = new Promise(resolve => { finish = resolve; });
@@ -82,19 +83,34 @@ async function launchGame(game, source, {sync = false} = {}) {
     location.searchParams.set('plain', '1');
   }
   runInNewContext(script, {
-    URL, URLSearchParams, Response, DecompressionStream, location,
+    URL, URLSearchParams, Response, TransformStream, DecompressionStream, performance, location,
     arcadeSaveKeys: { '2048': ['gameState'] },
     window: {
       configureArcadeMinecraftRelay() { configured = true; },
       async prepareArcadeSaves(game, keys, origin) { restored = {game, keys, origin}; }
     },
-    fetch: async url => { fetched = url; return new Response(sync ? source : gzipSync(source)); },
+    fetch: async url => {
+      fetched = url;
+      const body = sync ? Buffer.from(source) : gzipSync(source);
+      const stream = new ReadableStream({
+        start(controller) {
+          const middle = Math.floor(body.length / 2);
+          controller.enqueue(body.subarray(0, middle));
+          controller.enqueue(body.subarray(middle));
+          controller.close();
+        }
+      });
+      return new Response(stream, {headers:knownSize ? {'Content-Length': String(body.length)} : {}});
+    },
     document: { getElementById: () => ({}), createElement: () => ({}),
       head: { append(script) { scripts.push(script.src); script.onload(); } },
       open() {}, close() {}, write(value) { written = value; } },
-    parent: { postMessage(message, origin) { finish({ message, origin }); } }
+    parent: { postMessage(message, origin) {
+      if (message.type === 'arcade-game-progress') progress.push(message.percent);
+      else finish({ message, origin });
+    } }
   });
-  return { ...(await done), written, fetched, configured, restored, scripts };
+  return { ...(await done), written, fetched, configured, restored, scripts, progress };
 }
 test('compressed games load from the certificate-valid site and retain their asset base', async () => {
   const result = await launchGame('speed-stars', '<!doctype html><html><head></head><body>Game</body></html>');
@@ -103,7 +119,14 @@ test('compressed games load from the certificate-valid site and retain their ass
   assert.equal(result.message.type, 'arcade-game-opened');
   assert.equal(result.origin, 'https://www.calcolatrice.website');
   assert.equal(result.configured, false);
+  assert.ok(result.progress[0] >= 49 && result.progress[0] <= 50);
+  assert.equal(result.progress.at(-1), 100);
   assert.deepEqual(result.scripts, ['../assets/game-audio.js']);
+});
+test('downloads with unknown size report the startup stage without inventing percentages', async () => {
+  const result = await launchGame('speed-stars', '<html>Game</html>', {knownSize:false});
+  assert.deepEqual(result.progress, [null]);
+  assert.equal(result.message.type, 'arcade-game-opened');
 });
 test('Minecraft setup runs before opening the game; invalid game paths are rejected', async () => {
   const result = await launchGame('eaglecraft-26-3', '<html>Game</html>');

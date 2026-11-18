@@ -45,11 +45,42 @@ async function prepareGame() {
   }
 }
 
+function reportDownload(percent) {
+  parent.postMessage({type:'arcade-game-progress', percent}, playerOrigin);
+  status.textContent = percent === null || percent === 100
+    ? 'Avvio del gioco…' : 'Scaricamento del gioco… ' + percent + '%';
+}
+
 async function readGame(url, plain) {
   const response = await fetch(url.href + (plain ? '' : '.gz'), {priority:'high'});
   if (!response.ok || !response.body) throw new Error('Scaricamento non riuscito');
-  const stream = plain ? response.body : response.body.pipeThrough(new DecompressionStream('gzip'));
-  return new Response(stream).text();
+  // Fetch exposes decoded bytes, so the length is comparable only if HTTP
+  // did not add its own compression on top of the game file.
+  const total = Number(response.headers.get('Content-Length'));
+  const encoding = response.headers.get('Content-Encoding');
+  let stream = response.body;
+  if (total > 0 && (!encoding || encoding === 'identity')) {
+    let downloaded = 0;
+    let lastPercent = -1;
+    let lastUpdate = 0;
+    stream = stream.pipeThrough(new TransformStream({
+      transform(chunk, controller) {
+        downloaded += chunk.byteLength;
+        const percent = Math.min(99, Math.floor(downloaded * 100 / total));
+        const now = performance.now();
+        if (percent !== lastPercent && (lastPercent === -1 || now - lastUpdate >= 100)) {
+          lastPercent = percent;
+          lastUpdate = now;
+          reportDownload(percent);
+        }
+        controller.enqueue(chunk);
+      }
+    }));
+  }
+  if (!plain) stream = stream.pipeThrough(new DecompressionStream('gzip'));
+  const source = await new Response(stream).text();
+  reportDownload(total > 0 && (!encoding || encoding === 'identity') ? 100 : null);
+  return source;
 }
 
 async function launch() {
