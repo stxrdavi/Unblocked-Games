@@ -728,7 +728,7 @@ async function showGame(game, {reloading = false} = {}) {
   if (game.cover) playerCover.src = game.cover;
   const note = get('player-note');
   note.textContent = game.id === 'eaglecraft-26-3'
-    ? 'Online già configurato. Apri il mondo → Relay LAN e condividi il codice. Gli amici entrano da Multiplayer → Direct Connection → Join LAN World. Al primo avvio il relay può richiedere circa un minuto.'
+    ? 'Per giocare con gli amici, apri il tuo mondo e usa Relay LAN per generare un codice. Gli amici lo inseriscono in Multiplayer → Direct Connect → Join Shared World.'
     : game.notice || (supportsCloud ? 'Usa lo stesso account sui tuoi dispositivi per ritrovare i progressi.' : '');
   note.hidden = !note.textContent;
   const frame = document.createElement('iframe');
@@ -781,7 +781,8 @@ async function showGame(game, {reloading = false} = {}) {
   }, {once:true});
   // Games need a real, certificate-valid origin for IndexedDB, workers and audio.
   frame.sandbox = 'allow-scripts allow-pointer-lock allow-same-origin allow-downloads';
-  const url = new URL(useLauncher ? 'games/launch.html?v=5' : game.url, gameOrigin + location.pathname);
+  const launcherVersion = game.id === 'eaglecraft-26-3' ? 6 : 5;
+  const url = new URL(useLauncher ? 'games/launch.html?v=' + launcherVersion : game.url, gameOrigin + location.pathname);
   if (useLauncher) url.searchParams.set('game', game.id);
   if (useCloud) {
     url.searchParams.set('sync', '1');

@@ -20,33 +20,54 @@ function relay(initial = {}) {
   runInNewContext(relayScript, context);
   return { values, launch: context.window.configureArcadeMinecraftRelay };
 }
-test('26.3 receives the WebSocket LAN transport, preserving custom relays and saved worlds', () => {
+const publicRelay = 'wss://oxer-26-2-relay-c5f9ad499e09.herokuapp.com';
+const oldRelay = {
+  name: 'Arcade LAN', address: 'wss://arcade-lan-relay.onrender.com',
+  private: false, token: '', capability: 'both', detected: 'both'
+};
+test('existing Arcade settings migrate to the public relay without changing custom relays or worlds', () => {
   const custom = { name: 'Amici è 👾', address: 'wss://custom.example', capability: 'auto' };
-  const old = encode([custom]);
-  const { values, launch } = relay({ [key]: old, worlds: 'saved-world-data' });
+  const old = encode([custom, oldRelay]);
+  const { values, launch } = relay({
+    [key]: old, 'arcade-minecraft-relay-v1': '1', worlds: 'saved-world-data'
+  });
   launch();
   const profiles = decode(values.get(key));
-  assert.equal(profiles[0].address, 'wss://arcade-lan-relay.onrender.com');
-  assert.equal(profiles[0].capability, 'both');
-  assert.equal(profiles[0].private, false);
-  assert.deepEqual(profiles[1], custom);
-  assert.equal(values.get('arcade-minecraft-relay-backup-v1'), old);
+  assert.deepEqual(profiles[0], custom);
+  assert.equal(profiles[1].address, publicRelay);
+  assert.equal(profiles[1].detected, 'both');
+  assert.equal(profiles[2].address, 'wss://relay.deev.is');
+  assert.equal(profiles[2].detected, 'singleplayer');
+  assert.equal(values.get('arcade-minecraft-relay-backup-v2'), old);
   assert.equal(values.get('worlds'), 'saved-world-data');
 });
-test('later launches respect changes made by the player', () => {
+test('new launches seed a public relay and respect later removals by the player', () => {
   const { values, launch } = relay();
   launch();
+  assert.equal(decode(values.get(key))[0].address, publicRelay);
   values.set(key, encode([]));
   launch();
   assert.deepEqual(decode(values.get(key)), []);
 });
-test('legacy and damaged settings do not prevent automatic configuration', () => {
-  for (const initial of [{ '_eaglercraftX.relay.list.v2': encode([{ address: 'wss://old.example' }]) }, { [key]: 'damaged!' }]) {
-    const { values, launch } = relay(initial);
+test('existing custom, empty, and legacy lists stay intact across migration', () => {
+  const custom = {...oldRelay, name:'My relay', token:'custom'};
+  for (const [storageKey, profiles] of [[key, []], [key, [custom]],
+    ['_eaglercraftX.relay.list.v2', [{address:'wss://old.example'}]]]) {
+    const previous = encode(profiles);
+    const { values, launch } = relay({[storageKey]: previous, 'arcade-minecraft-relay-v1': '1'});
     launch();
-    assert.equal(decode(values.get(key))[0].capability, 'both');
-    assert.equal(values.get('arcade-minecraft-relay-backup-v1'), Object.values(initial)[0]);
+    assert.equal(values.get(storageKey), previous);
   }
+});
+test('a saved public relay is not duplicated and damaged storage recovers', () => {
+  const existing = {name:'My public relay', address:publicRelay + '/'};
+  const migrated = relay({[key]:encode([oldRelay, existing]), 'arcade-minecraft-relay-v1':'1'});
+  migrated.launch();
+  const profiles = decode(migrated.values.get(key));
+  assert.deepEqual(profiles.filter(p => p.address.replace(/\/+$/, '') === publicRelay), [existing]);
+  const damaged = relay({[key]:'damaged!'});
+  damaged.launch();
+  assert.equal(decode(damaged.values.get(key))[0].address, publicRelay);
 });
 async function launchGame(game, source, {sync = false} = {}) {
   const html = readFileSync(resolve(root, 'arcade/games/launch.html'), 'utf8');
@@ -87,7 +108,7 @@ test('compressed games load from the certificate-valid site and retain their ass
 test('Minecraft setup runs before opening the game; invalid game paths are rejected', async () => {
   const result = await launchGame('eaglecraft-26-3', '<html>Game</html>');
   assert.equal(result.configured, true);
-  assert.deepEqual(result.scripts, ['../assets/game-audio.js', '../assets/minecraft-relay.js?v=1']);
+  assert.deepEqual(result.scripts, ['../assets/game-audio.js', '../assets/minecraft-relay.js?v=2']);
   const invalid = await launchGame('../secrets', '');
   assert.equal(invalid.message.type, 'arcade-game-failed');
   assert.equal(invalid.fetched, undefined);

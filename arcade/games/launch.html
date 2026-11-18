@@ -29,7 +29,7 @@ function loadScript(path) {
 
 async function prepareGame() {
   if (game === 'eaglecraft-26-3') {
-    await loadScript('../assets/minecraft-relay.js?v=1');
+    await loadScript('../assets/minecraft-relay.js?v=2');
     try { window.configureArcadeMinecraftRelay(); } catch {}
   }
   if (params.get('sync') === '1') {
