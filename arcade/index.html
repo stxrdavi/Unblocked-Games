@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=reset-countdown">
+<link rel="stylesheet" href="assets/arcade.css?v=recent-games">
 <script src="assets/save-bridge.js?v=2"></script>
 </head>
 <body>
@@ -70,6 +70,16 @@
       <div id="friend-strip"></div>
       <p id="friends-status" role="status"></p>
       <div id="friend-requests" hidden></div>
+    </section>
+    <section id="recent-games" aria-labelledby="recent-title" hidden>
+      <div class="recent-heading">
+        <h2 id="recent-title">Giocati di recente</h2>
+        <div class="recent-controls">
+          <button class="secondary" id="recent-back" type="button" aria-label="Giochi più recenti" aria-controls="recent-list" disabled><svg class="icon" aria-hidden="true"><use href="assets/iconsax.svg#back"></use></svg></button>
+          <button class="secondary" id="recent-next" type="button" aria-label="Giochi precedenti" aria-controls="recent-list" disabled><svg class="icon" aria-hidden="true"><use href="assets/iconsax.svg#forward"></use></svg></button>
+        </div>
+      </div>
+      <div id="recent-list" tabindex="0" role="region" aria-label="Scorri i giochi giocati di recente"></div>
     </section>
     <section id="catalogo" aria-labelledby="catalog-title">
       <div class="catalog-head">
@@ -1065,6 +1075,7 @@ if (serverMode && !profileSession) {
   accountWelcome.showModal();
 }
 </script>
+<script src="assets/recent-games.js?v=1"></script>
 <script src="assets/profile.js?v=7"></script>
 <script src="assets/profile-search.js?v=3"></script>
 <script src="assets/game-search.js?v=1"></script>

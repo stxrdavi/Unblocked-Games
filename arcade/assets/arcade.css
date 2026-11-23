@@ -110,6 +110,21 @@ kbd { padding: 0 7px; border: 1px solid var(--line); border-radius: 5px; backgro
 .catalog-filter .icon { position:absolute; left:10px; width:16px; height:16px; pointer-events:none; }
 .catalog-filter .icon:last-child { left:auto; right:10px; }
 .grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px; }
+#recent-games { min-width:0; margin:28px 0 34px; }
+.recent-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; }
+.recent-heading h2 { margin:0; font:700 clamp(22px,3vw,28px)/1.2 var(--display); letter-spacing:-.035em; }
+.recent-controls { display:flex; flex:none; gap:8px; }
+.recent-controls button { display:grid; place-items:center; width:40px; height:40px; padding:0; }
+.recent-controls button:disabled { opacity:.3; }
+#recent-list { display:flex; gap:16px; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; scroll-padding-inline:3px; scrollbar-width:none; padding:4px 3px 8px; }
+#recent-list::-webkit-scrollbar { display:none; }
+.recent-game { flex:0 0 clamp(130px,13vw,170px); min-width:0; scroll-snap-align:start; border-radius:12px; text-decoration:none; }
+.recent-art { position:relative; display:grid; place-items:center; aspect-ratio:1; overflow:hidden; border:1px solid var(--line); border-radius:12px; background:radial-gradient(ellipse at top,var(--hue),var(--surface)); color:var(--acid); font:700 32px var(--display); }
+.recent-art img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .18s ease; }
+.recent-game:hover .recent-art, .recent-game:focus-visible .recent-art { border-color:var(--violet); }
+.recent-game:hover img { transform:scale(1.04); }
+.recent-game strong { display:block; margin-top:8px; font-size:14px; line-height:1.4; overflow-wrap:anywhere; }
+@media (prefers-reduced-motion:reduce) { .recent-art img { transition:none; } }
 .card { position:relative; min-width:0; border:1px solid var(--line); border-radius:16px; background:var(--paper); transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
 .card:hover, .card:focus-within { border-color:#b49ae9; box-shadow:0 10px 22px #0005; }
 .game-link { display:block; height:100%; border-radius:inherit; text-decoration:none; }
