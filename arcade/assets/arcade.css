@@ -511,7 +511,7 @@ html:has(:fullscreen) :is(#dm-launcher, #dm-dialog, #global-launcher, #global-ch
 .reset-warning { padding:14px; border:1px solid #ff858533; border-radius:12px; background:#ef444412; }
 .reset-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:24px; }
 .reset-confirm { min-height:44px; padding:11px 16px; border:1px solid #ff7777; border-radius:12px; background:#bf303c; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
-.reset-confirm:hover { background:#d03d49; }
+.reset-confirm:not(:disabled):hover { background:#d03d49; }
 .reset-confirm:focus-visible, #game-reset-cancel:focus-visible { outline:3px solid #ffb4b4; outline-offset:3px; }
 .reset-actions button:disabled { opacity:.6; cursor:wait; }
 #game-reset-status { color:#ffd2d2; font-size:14px; line-height:1.6; }

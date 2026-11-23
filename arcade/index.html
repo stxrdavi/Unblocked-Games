@@ -7,7 +7,7 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=reset-1">
+<link rel="stylesheet" href="assets/arcade.css?v=reset-countdown">
 <script src="assets/save-bridge.js?v=2"></script>
 </head>
 <body>
@@ -379,6 +379,15 @@ get('game-reload').addEventListener('click', reloadGame);
 const resetDialog = get('game-reset-dialog');
 let resetTarget = null;
 let resettingGame = false;
+let resetCountdown;
+let resetReadyAt = Infinity;
+function updateResetCountdown() {
+  const seconds = Math.max(0, Math.ceil((resetReadyAt - performance.now()) / 1000));
+  const confirm = get('game-reset-confirm');
+  confirm.disabled = seconds > 0;
+  confirm.textContent = seconds > 0 ? 'Attendi ' + seconds + ' s' : 'Sì, resetta i progressi';
+  if (seconds === 0) clearInterval(resetCountdown);
+}
 function gameResetRevision(game) {
   try { return localStorage.getItem('arcade-reset-v1:' + game.id); } catch { return null; }
 }
@@ -388,12 +397,23 @@ get('game-reset').addEventListener('click', () => {
   resetTarget = game;
   get('game-reset-name').textContent = game.title;
   get('game-reset-status').hidden = true;
+  clearInterval(resetCountdown);
+  resetReadyAt = performance.now() + 5000;
+  updateResetCountdown();
   resetDialog.showModal();
+  resetCountdown = setInterval(updateResetCountdown, 200);
 });
 get('game-reset-cancel').addEventListener('click', () => resetDialog.close());
 resetDialog.addEventListener('cancel', event => { if (resettingGame) event.preventDefault(); });
+resetDialog.addEventListener('close', () => {
+  if (resetDialog.open) return;
+  clearInterval(resetCountdown);
+  resetReadyAt = Infinity;
+  resetTarget = null;
+});
 get('game-reset-confirm').addEventListener('click', async () => {
-  if (resettingGame || !resetTarget || location.hash !== '#gioco/' + resetTarget.id) return;
+  if (resettingGame || !resetDialog.open || performance.now() < resetReadyAt ||
+      !resetTarget || location.hash !== '#gioco/' + resetTarget.id) return;
   const game = resetTarget;
   const session = profileSession;
   const confirm = get('game-reset-confirm');

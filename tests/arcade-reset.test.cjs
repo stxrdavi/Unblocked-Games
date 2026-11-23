@@ -7,11 +7,13 @@ const root = resolve(__dirname, '..');
 const page = readFileSync(resolve(root, 'arcade/index.html'), 'utf8');
 
 function resetUI({cloudError = false, pending = Promise.resolve()} = {}) {
+  let now = 0;
+  let countdown;
   const elements = new Map();
   const node = id => {
     if (!elements.has(id)) elements.set(id, {hidden:false, disabled:false, listeners:{},
       addEventListener(type, fn) { this.listeners[type] = fn; },
-      showModal() { this.open = true; }, close() { this.open = false; }
+      showModal() { this.open = true; }, close() { this.open = false; this.listeners.close?.(); }
     });
     return elements.get(id);
   };
@@ -19,6 +21,9 @@ function resetUI({cloudError = false, pending = Promise.resolve()} = {}) {
   const actions = [];
   const game = {id:'2048', title:'2048'};
   const context = {
+    performance:{now:()=>now},
+    setInterval(fn) { countdown = fn; return 1; },
+    clearInterval() { countdown = undefined; },
     get:node, byId:new Map([['2048',game]]), location:{hash:'#gioco/2048'}, profileSession:null,
     playerRequest:0, crypto:{randomUUID:()=>'new-revision'}, arcadeSaveKeys:{'2048':['gameState','bestScore']},
     localStorage:{getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key)},
@@ -29,8 +34,36 @@ function resetUI({cloudError = false, pending = Promise.resolve()} = {}) {
     async showGame() { actions.push('reload'); }, reloadGame() {}
   };
   runInNewContext(page.slice(page.indexOf("const resetDialog = get('game-reset-dialog');"),page.indexOf('\nasync function accountApi')),context);
-  return {node, values, actions, context};
+  return {node, values, actions, context, advance(ms) { now += ms; countdown?.(); }};
 }
+test('reset is blocked for five seconds and each reopening starts a fresh countdown', async()=>{
+  const ui = resetUI();
+  const trigger = ui.node('game-reset').listeners.click;
+  const confirm = ui.node('game-reset-confirm');
+  trigger();
+  assert.equal(confirm.disabled, true);
+  assert.equal(confirm.textContent, 'Attendi 5 s');
+  await confirm.listeners.click();
+  assert.deepEqual(ui.actions, []);
+  ui.advance(4999);
+  assert.equal(confirm.disabled, true);
+  assert.equal(confirm.textContent, 'Attendi 1 s');
+  await confirm.listeners.click();
+  assert.deepEqual(ui.actions, []);
+  ui.advance(1);
+  assert.equal(confirm.disabled, false);
+  assert.equal(confirm.textContent, 'Sì, resetta i progressi');
+  ui.node('game-reset-cancel').listeners.click();
+  await confirm.listeners.click();
+  assert.deepEqual(ui.actions, []);
+  trigger();
+  assert.equal(confirm.disabled, true);
+  assert.equal(confirm.textContent, 'Attendi 5 s');
+  ui.advance(5000);
+  await confirm.listeners.click();
+  assert.deepEqual(ui.actions, ['stop','cloud','reload']);
+});
+
 test('cancel preserves saves; confirmation stops the game, waits for writes, and resets only the selected game', async()=>{
   let finishWrite;
   const pending = new Promise(resolve=>{finishWrite=resolve;});
@@ -43,6 +76,7 @@ test('cancel preserves saves; confirmation stops the game, waits for writes, and
   assert.equal(ui.values.get('gameState'),'old-2048-save');
   assert.deepEqual(ui.actions,[]);
   ui.node('game-reset').listeners.click();
+  ui.advance(5000);
   const done=ui.node('game-reset-confirm').listeners.click();
   assert.deepEqual(ui.actions,['stop']);
   assert.equal(ui.node('game-reset-confirm').disabled,true);
@@ -54,7 +88,7 @@ test('cancel preserves saves; confirmation stops the game, waits for writes, and
 });
 test('a cloud failure keeps the confirmation open and leaves progress unchanged for retry',async()=>{
   const ui=resetUI({cloudError:true});
-  ui.node('game-reset').listeners.click();await ui.node('game-reset-confirm').listeners.click();
+  ui.node('game-reset').listeners.click();ui.advance(5000);await ui.node('game-reset-confirm').listeners.click();
   assert.equal(ui.node('game-reset-dialog').open,true);
   assert.equal(ui.node('game-reset-confirm').disabled,false);
   assert.equal(ui.values.has('arcade-reset-v1:2048'),false);
