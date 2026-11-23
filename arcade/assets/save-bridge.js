@@ -57,5 +57,18 @@ function connectGameSaves(frame, game) {
     } catch { reply({ok:false}); }
   }
   window.addEventListener('message', receive);
-  return () => { open = false; window.removeEventListener('message', receive); };
+  return () => { open = false; window.removeEventListener('message', receive); return writes; };
+}
+
+async function resetCloudGameSave(game, session) {
+  const keys = arcadeSaveKeys[game.id];
+  if (!keys || !session) return;
+  const token = await accessToken(session);
+  if (session !== profileSession) throw new Error('Account cambiato. Riapri il gioco e riprova.');
+  const response = await fetch(authBase+'/rest/v1/rpc/arcade_sync_game', {
+    method:'POST', headers:{apikey:authKey, Authorization:'Bearer '+token, 'Content-Type':'application/json'},
+    body:JSON.stringify({game_name:game.id, changes:Object.fromEntries(keys.map(key => [key, null]))}),
+    signal:AbortSignal.timeout(10000)
+  });
+  if (!response.ok) throw new Error('Reset cloud non riuscito. Controlla la connessione e riprova.');
 }

@@ -28,13 +28,17 @@ function loadScript(path) {
 }
 
 async function prepareGame() {
+  if (params.has('reset')) {
+    await loadScript('../assets/reset-storage.js?v=1');
+    window.prepareArcadeResetStorage(game, params.get('reset'));
+  }
   if (game === 'eaglecraft-26-3') {
     await loadScript('../assets/minecraft-relay.js?v=2');
     try { window.configureArcadeMinecraftRelay(); } catch {}
   }
   if (params.get('sync') === '1') {
     await Promise.all([
-      loadScript('../assets/save-bridge.js?v=1'),
+      loadScript('../assets/save-bridge.js?v=2'),
       loadScript('../assets/game-saves.js?v=1')
     ]);
     try {

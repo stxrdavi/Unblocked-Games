@@ -496,3 +496,22 @@ html:has(:fullscreen) :is(#dm-launcher, #dm-dialog, #global-launcher, #global-ch
 .notice-actions { display:flex; gap:8px; justify-content:flex-end; }
 #notice-reply { background:var(--acid); color:#211239; }
 .chat-mention { color:var(--acid); font-weight:700; }
+
+/* Destructive game action: a separate confirmation with a safe default focus. */
+.player-actions .reset-trigger { color:#ffb4b4; border-color:#e75c5c66; }
+.player-actions .reset-trigger:hover { background:#6e202b; border-color:#ff8585; }
+#game-reset-dialog { box-sizing:border-box; width:min(500px,calc(100% - 28px)); max-height:calc(100dvh - 28px); overflow:auto; padding:clamp(22px,5vw,32px); border:1px solid #e75c5c; border-radius:22px; background:linear-gradient(145deg,#351720,#21121c); color:#fff1f1; box-shadow:0 24px 90px #000b; }
+#game-reset-dialog::backdrop { background:#14070cd9; backdrop-filter:blur(5px); }
+.reset-emblem { display:grid; place-items:center; width:54px; height:54px; border:1px solid #ff7d7d66; border-radius:16px; background:#ef444422; color:#ffa4a4; }
+.reset-emblem .icon { width:28px; height:28px; }
+.reset-eyebrow { margin:20px 0 8px; color:#ff9f9f; font-size:11px; font-weight:800; letter-spacing:.12em; }
+#game-reset-title { margin:0 0 16px; font-size:clamp(22px,5vw,28px); line-height:1.2; }
+#game-reset-warning, .reset-warning { font-size:14px; line-height:1.7; color:#eacdd1; }
+#game-reset-warning strong { color:#fff; }
+.reset-warning { padding:14px; border:1px solid #ff858533; border-radius:12px; background:#ef444412; }
+.reset-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:24px; }
+.reset-confirm { min-height:44px; padding:11px 16px; border:1px solid #ff7777; border-radius:12px; background:#bf303c; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+.reset-confirm:hover { background:#d03d49; }
+.reset-confirm:focus-visible, #game-reset-cancel:focus-visible { outline:3px solid #ffb4b4; outline-offset:3px; }
+.reset-actions button:disabled { opacity:.6; cursor:wait; }
+#game-reset-status { color:#ffd2d2; font-size:14px; line-height:1.6; }

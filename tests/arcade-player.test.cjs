@@ -69,15 +69,16 @@ test('a saved public relay is not duplicated and damaged storage recovers', () =
   damaged.launch();
   assert.equal(decode(damaged.values.get(key))[0].address, publicRelay);
 });
-async function launchGame(game, source, {sync = false, knownSize = true} = {}) {
+async function launchGame(game, source, {sync = false, knownSize = true, reset = false} = {}) {
   const html = readFileSync(resolve(root, 'arcade/games/launch.html'), 'utf8');
   const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)[1];
-  let written, fetched, restored, configured = false;
+  let written, fetched, restored, resetStorage, configured = false;
   const progress = [];
   const scripts = [];
   let finish;
   const done = new Promise(resolve => { finish = resolve; });
   const location = new URL('https://www.calcolatrice.website/arcade/games/launch.html?v=5&game=' + game);
+  if (reset) location.searchParams.set('reset', 'fresh-revision');
   if (sync) {
     location.searchParams.set('sync', '1');
     location.searchParams.set('plain', '1');
@@ -86,6 +87,7 @@ async function launchGame(game, source, {sync = false, knownSize = true} = {}) {
     URL, URLSearchParams, Response, TransformStream, DecompressionStream, performance, location,
     arcadeSaveKeys: { '2048': ['gameState'] },
     window: {
+      prepareArcadeResetStorage(game, revision) { resetStorage = {game, revision}; },
       configureArcadeMinecraftRelay() { configured = true; },
       async prepareArcadeSaves(game, keys, origin) { restored = {game, keys, origin}; }
     },
@@ -110,7 +112,7 @@ async function launchGame(game, source, {sync = false, knownSize = true} = {}) {
       else finish({ message, origin });
     } }
   });
-  return { ...(await done), written, fetched, configured, restored, scripts, progress };
+  return { ...(await done), written, fetched, configured, restored, resetStorage, scripts, progress };
 }
 test('compressed games load from the certificate-valid site and retain their asset base', async () => {
   const result = await launchGame('speed-stars', '<!doctype html><html><head></head><body>Game</body></html>');
@@ -141,7 +143,7 @@ test('games with cloud sync still restore saves and load the plain HTML', async 
   assert.equal(result.fetched, 'https://www.calcolatrice.website/arcade/games/2048/index.html');
   assert.deepEqual(result.scripts, [
     '../assets/game-audio.js',
-    '../assets/save-bridge.js?v=1',
+    '../assets/save-bridge.js?v=2',
     '../assets/game-saves.js?v=1'
   ]);
   assert.deepEqual(result.restored, {game:'2048', keys:['gameState'], origin:'https://www.calcolatrice.website'});
@@ -159,4 +161,11 @@ test('26.3 launches on the page origin, while other game routing is preserved', 
     assert.equal(context.playerOriginFor({id:'eaglecraft-26-3'}), origin);
     assert.equal(context.playerOriginFor({id:'2048'}), context.gameOrigin);
   }
+});
+
+test('reset storage is prepared before loading a game with cloud sync', async () => {
+  const result = await launchGame('2048', '<html>Game</html>', {sync:true, reset:true});
+  assert.deepEqual(result.resetStorage, {game:'2048', revision:'fresh-revision'});
+  assert.ok(result.scripts.indexOf('../assets/reset-storage.js?v=1') < result.scripts.indexOf('../assets/game-saves.js?v=1'));
+  assert.equal(result.message.type, 'arcade-game-opened');
 });

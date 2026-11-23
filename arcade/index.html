@@ -7,8 +7,8 @@
 <meta name="description" content="Un catalogo di giochi per browser con ricerca e preferiti.">
 <title>Home page - Classroom</title>
 <link rel="icon" type="image/jpeg" href="assets/classroom-favicon.jpg">
-<link rel="stylesheet" href="assets/arcade.css?v=notices">
-<script src="assets/save-bridge.js?v=1"></script>
+<link rel="stylesheet" href="assets/arcade.css?v=reset-1">
+<script src="assets/save-bridge.js?v=2"></script>
 </head>
 <body>
 <aside id="arcade-notice" popover="manual" aria-label="Notifica Arcade" hidden>
@@ -89,6 +89,7 @@
       </div>
       <div class="player-actions">
         <button id="game-favorite" class="secondary" type="button" aria-label="Gioco nei preferiti" aria-pressed="false"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#star"></use></svg> Preferiti</button>
+        <button id="game-reset" class="secondary reset-trigger" type="button" aria-haspopup="dialog" aria-controls="game-reset-dialog"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#reload"></use></svg> Reset progressi</button>
         <button id="game-reload" class="secondary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#reload"></use></svg> Ricarica gioco</button>
         <button id="game-audio" class="secondary" type="button" aria-pressed="false" disabled><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#volume"></use></svg> <span id="game-audio-label">Audio attivo</span></button>
         <button id="fullscreen" class="secondary" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#fullscreen"></use></svg> Schermo intero</button>
@@ -107,6 +108,15 @@
     <p class="player-note" id="player-note" aria-live="polite" hidden></p>
   </section>
 </main>
+<dialog id="game-reset-dialog" aria-labelledby="game-reset-title" aria-describedby="game-reset-warning">
+  <div class="reset-emblem" aria-hidden="true"><svg class="icon"><use href="assets/iconsax.svg#reload"></use></svg></div>
+  <p class="reset-eyebrow">AZIONE IRREVERSIBILE</p>
+  <h2 id="game-reset-title">Resettare i progressi?</h2>
+  <p id="game-reset-warning">Stai per azzerare tutti i progressi di <strong id="game-reset-name"></strong> in questo browser: salvataggi, livelli sbloccati, record, impostazioni e mondi locali. Per i giochi sincronizzati, verranno azzerati anche i salvataggi cloud del tuo account.</p>
+  <p class="reset-warning">Non potrai recuperare i progressi con il pulsante Ricarica. I dati degli altri giochi e il tuo profilo resteranno intatti. I progressi sui server online e sui siti esterni non possono essere resettati da qui.</p>
+  <p id="game-reset-status" role="status" aria-live="polite" hidden></p>
+  <div class="reset-actions"><button id="game-reset-cancel" class="secondary" type="button" autofocus>Annulla</button><button id="game-reset-confirm" class="reset-confirm" type="button">Sì, resetta i progressi</button></div>
+</dialog>
 <dialog id="profile-dialog" aria-labelledby="profile-name">
   <button class="secondary profile-close" id="profile-close" type="button" aria-label="Chiudi profilo" autofocus><svg class="icon" aria-hidden="true" focusable="false"><use href="assets/iconsax.svg#close"></use></svg></button>
   <div class="profile-heading">
@@ -339,13 +349,14 @@ audioButton.addEventListener('click', () => {
 });
 
 function clearGameFrame() {
-  launcherCleanup?.();
+  const pendingSaves = launcherCleanup?.();
   launcherCleanup = undefined;
   audioButton.disabled = true;
   clearTimeout(loadingTimer);
   get('game-loading').hidden = true;
   get('frame-slot').setAttribute('aria-busy', 'false');
   get('frame-slot').replaceChildren();
+  return pendingSaves;
 }
 
 function setGameLoading(message, failed = false) {
@@ -365,6 +376,72 @@ function showDownloadProgress(percent) {
 }
 
 get('game-reload').addEventListener('click', reloadGame);
+const resetDialog = get('game-reset-dialog');
+let resetTarget = null;
+let resettingGame = false;
+function gameResetRevision(game) {
+  try { return localStorage.getItem('arcade-reset-v1:' + game.id); } catch { return null; }
+}
+get('game-reset').addEventListener('click', () => {
+  const game = byId.get(location.hash.slice('#gioco/'.length));
+  if (!game || get('player').hidden || resettingGame) return;
+  resetTarget = game;
+  get('game-reset-name').textContent = game.title;
+  get('game-reset-status').hidden = true;
+  resetDialog.showModal();
+});
+get('game-reset-cancel').addEventListener('click', () => resetDialog.close());
+resetDialog.addEventListener('cancel', event => { if (resettingGame) event.preventDefault(); });
+get('game-reset-confirm').addEventListener('click', async () => {
+  if (resettingGame || !resetTarget || location.hash !== '#gioco/' + resetTarget.id) return;
+  const game = resetTarget;
+  const session = profileSession;
+  const confirm = get('game-reset-confirm');
+  const cancel = get('game-reset-cancel');
+  const status = get('game-reset-status');
+  resettingGame = true;
+  confirm.disabled = cancel.disabled = true;
+  confirm.textContent = 'Reset in corso…';
+  status.hidden = true;
+  ++playerRequest;
+  // Stop the game first, then wait for any cloud write already in flight.
+  const pendingSaves = clearGameFrame();
+  setGameLoading('Reset dei progressi…');
+  try {
+    // Check storage before changing cloud data, so a blocked browser fails safely.
+    const storageKey = 'arcade-reset-v1:' + game.id;
+    const revision = crypto.randomUUID();
+    const probe = storageKey + ':check';
+    localStorage.setItem(probe, revision);
+    localStorage.removeItem(probe);
+    await pendingSaves;
+    await resetCloudGameSave(game, session);
+    if (session !== profileSession) throw new Error('Account cambiato. Riapri il gioco e riprova.');
+    localStorage.setItem(storageKey, revision);
+    // Prevent an older, unscoped save from being imported into the cloud later.
+    for (const key of arcadeSaveKeys[game.id] || []) localStorage.removeItem(key);
+    resetDialog.close();
+    if (location.hash === '#gioco/' + game.id) {
+      await showGame(game, {reloading:true});
+      get('player-note').textContent = 'Progressi resettati. Il gioco riparte da zero.';
+      get('player-note').hidden = false;
+    }
+  } catch (error) {
+    status.textContent = (error.message || 'Reset non riuscito.') + ' Puoi riprovare oppure annullare.';
+    status.hidden = false;
+    setGameLoading('Reset non completato. Ricarica il gioco per continuare.', true);
+  } finally {
+    resettingGame = false;
+    confirm.disabled = cancel.disabled = false;
+    confirm.textContent = 'Sì, resetta i progressi';
+  }
+});
+window.addEventListener('hashchange', () => { if (!resettingGame) resetDialog.close(); });
+window.addEventListener('storage', event => {
+  const game = byId.get(location.hash.slice('#gioco/'.length));
+  if (game && event.key === 'arcade-reset-v1:' + game.id) reloadGame();
+});
+
 
 async function accountApi(action, data) {
   const response = await fetch(authBase+'/functions/v1/clever-handler', {
@@ -658,7 +735,7 @@ function warmGame(game) {
   const hint = document.createElement('link');
   hint.rel = 'prefetch';
   // Warm the small launcher for compressed titles. The game itself may be large.
-  const url = new URL(game.compressed ? 'games/launch.html?v=7' : game.url, location.href);
+  const url = new URL(game.compressed ? 'games/launch.html?v=8' : game.url, location.href);
   if (game.compressed) url.searchParams.set('game', game.id);
   hint.href = url.href;
   pendingWarmup = hint;
@@ -816,7 +893,8 @@ async function showGame(game, {reloading = false} = {}) {
     }
   },15000);
   const useCloud = gameOrigin !== location.origin && Boolean(profileSession && supportsCloud);
-  const useLauncher = game.compressed || useCloud;
+  const resetRevision = gameResetRevision(game);
+  const useLauncher = game.compressed || useCloud || Boolean(resetRevision);
   let loading = true;
   const finishLoading = () => {
     if (request !== playerRequest) return;
@@ -830,8 +908,9 @@ async function showGame(game, {reloading = false} = {}) {
     window.addEventListener('message', handleLauncher);
     const disconnectSaves = useCloud ? connectGameSaves(frame, game) : () => {};
     launcherCleanup = () => {
-      disconnectSaves();
+      const pendingSaves = disconnectSaves();
       window.removeEventListener('message', handleLauncher);
+      return pendingSaves;
     };
   } else {
     frame.addEventListener('load', finishLoading, {once:true});
@@ -863,8 +942,10 @@ async function showGame(game, {reloading = false} = {}) {
   }, {once:true});
   // Games need a real, certificate-valid origin for IndexedDB, workers and audio.
   frame.sandbox = 'allow-scripts allow-pointer-lock allow-same-origin allow-downloads';
-  const url = new URL(useLauncher ? 'games/launch.html?v=7' : game.url, gameOrigin + location.pathname);
+  const url = new URL(useLauncher ? 'games/launch.html?v=8' : game.url, gameOrigin + location.pathname);
   if (useLauncher) url.searchParams.set('game', game.id);
+  if (resetRevision) url.searchParams.set('reset', resetRevision);
+  if (useLauncher && !game.compressed) url.searchParams.set('plain', '1');
   if (useCloud) {
     url.searchParams.set('sync', '1');
     url.searchParams.set('plain', '1');
